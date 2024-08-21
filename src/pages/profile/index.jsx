@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../axiosInstance';
 import {
   Container,
   Card,
@@ -63,9 +63,7 @@ export default function imagee() {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        axios.defaults.withCredentials = true;
-
-        const response = await axios.get(`https://example.shop/api/user`);
+        const response = await axiosInstance.get(`/user`);
         setProfileData(response.data.data);
       } catch (error) {
         console.error('Error fetching profile data:', error);

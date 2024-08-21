@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../axiosInstance';
 import { TextField, Button, Grid, Typography, Alert,Box } from '@mui/material';
 
 export default function PasswordUpdate() {
@@ -24,8 +24,7 @@ export default function PasswordUpdate() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            axios.defaults.withCredentials = true;
-            const response = await axios.put(`https://example.shop/api/admins/updatePassword/${user.id}`, formData);
+            const response = await axiosInstance.put(`admins/updatePassword/${user.id}`, formData);
             setAlertMessage('Mot de passe mis à jour avec succès.');
             setTimeout(() => {
                 setAlertMessage('');

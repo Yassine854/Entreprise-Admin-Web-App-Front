@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import { Link as RouterLink,useNavigate  } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../../axiosInstance';
 
 // material-ui
 import Button from '@mui/material/Button';
@@ -47,9 +47,8 @@ export default function AuthLogin({ isDemo = false }) {
   const navigate = useNavigate();
   const fetchCsrfToken = async () => {
     try {
-        axios.defaults.withCredentials = true;
 
-      await axios.get('https://example.shop/api/csrf-cookie');
+      await axiosInstance.get('csrf-cookie');
       console.log("done");
     } catch (err) {
       setError('Failed to fetch CSRF token. Please try again.');
@@ -60,7 +59,7 @@ export default function AuthLogin({ isDemo = false }) {
     await fetchCsrfToken();
 
     try {
-      const response = await axios.post('https://example.shop/api/login', {
+      const response = await axiosInstance.post('login', {
         email: values.email,
         password: values.password
       });

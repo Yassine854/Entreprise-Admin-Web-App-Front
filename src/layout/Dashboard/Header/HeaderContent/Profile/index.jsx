@@ -1,6 +1,7 @@
-import PropTypes from 'prop-types';
+import { useEffect } from 'react';
 import { useRef, useState } from 'react';
-import axios from "axios";
+import axios from 'axios';
+import PropTypes from 'prop-types';
 // material-ui
 import { useTheme } from '@mui/material/styles';
 import ButtonBase from '@mui/material/ButtonBase';
@@ -30,7 +31,6 @@ import SettingOutlined from '@ant-design/icons/SettingOutlined';
 import UserOutlined from '@ant-design/icons/UserOutlined';
 import avatar1 from 'assets/images/users/avatar-1.png';
 
-// tab panel wrapper
 function TabPanel({ children, value, index, ...other }) {
   return (
     <div role="tabpanel" hidden={value !== index} id={`profile-tabpanel-${index}`} aria-labelledby={`profile-tab-${index}`} {...other}>
@@ -45,8 +45,6 @@ function a11yProps(index) {
     'aria-controls': `profile-tabpanel-${index}`
   };
 }
-
-// ==============================|| HEADER CONTENT - PROFILE ||============================== //
 
 export default function Profile() {
   const theme = useTheme();
@@ -66,23 +64,46 @@ export default function Profile() {
 
   const [value, setValue] = useState(0);
   const user = JSON.parse(localStorage.getItem('user'));
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
-
   const handleLogout = async () => {
     try {
-        axios.defaults.withCredentials = true;
-        const resp = await axios.post('https://example.shop/api/logout');
-        if (resp.status === 200) {
-            localStorage.removeItem('user');
-            window.location.href = '/';
-        }
+      axios.defaults.withCredentials = true;
+      const resp = await axios.post('https://example.shop/api/logout');
+      if (resp.status === 200) {
+        localStorage.removeItem('user');
+        window.location.href = '/';
+      }
     } catch (error) {
-        console.log(error);
+      console.log(error);
     }
-};
+  };
+
+  // Check if user exists in the database
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const response = await axios.get('https://example.shop/api/user', {
+          withCredentials: true,
+        });
+        console.log(response.data);
+        if (!response.data) {
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+        }
+      } catch (error) {
+        console.log(error);
+        // If there's an error, such as 404 or 401, assume the user doesn't exist
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
+    };
+
+    checkUser();
+  }, []);
 
   const iconBackColorOpen = 'grey.100';
 
@@ -103,11 +124,10 @@ export default function Profile() {
         onClick={handleToggle}
       >
         <Stack direction="row" spacing={1.25} alignItems="center" sx={{ p: 0.5 }}>
-        <Avatar
-      alt="profile user"
-      src={user.image ? `https://example.shop/storage/img/profile/${user.image}` : undefined}
-      xs='sm' // Adjust size as needed
-    />
+          <Avatar
+            alt="profile user"
+            src={user.image ? `https://example.shop/storage/img/profile/${user.image}` : undefined}
+          />
           <Typography variant="subtitle1" sx={{ textTransform: 'capitalize' }}>
             {user.name}
           </Typography>
@@ -143,12 +163,11 @@ export default function Profile() {
                           <Avatar alt="profile user" src={user.image ? `https://example.shop/storage/img/profile/${user.image}` : undefined} sx={{ width: 32, height: 32 }} />
                           <Stack>
                             <Typography variant="h6">{user.name}</Typography>
-
                           </Stack>
                         </Stack>
                       </Grid>
                       <Grid item>
-                        <Tooltip title="Déconnexion"  onClick={handleLogout}>
+                        <Tooltip title="Déconnexion" onClick={handleLogout}>
                           <IconButton size="large" sx={{ color: 'text.primary' }}>
                             <LogoutOutlined />
                           </IconButton>
@@ -201,4 +220,9 @@ export default function Profile() {
   );
 }
 
-TabPanel.propTypes = { children: PropTypes.node, value: PropTypes.number, index: PropTypes.number, other: PropTypes.any };
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  value: PropTypes.number,
+  index: PropTypes.number,
+  other: PropTypes.any
+};

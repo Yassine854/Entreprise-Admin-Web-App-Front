@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../axiosInstance';
 import {
   Container,
   Card,
@@ -45,8 +45,7 @@ export default function ContactForm() {
     e.preventDefault();
     setLoading(true); // Set loading to true when starting submission
     try {
-      axios.defaults.withCredentials = true;
-      const response = await axios.post('https://example.shop/api/contacts/create', formData);
+      const response = await axiosInstance.post('/contacts/create', formData);
       setAlertMessage('Message envoyé avec succès.');
       setTimeout(() => {
         setAlertMessage('');

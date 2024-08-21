@@ -25,6 +25,8 @@ const ShowProfile = Loadable(lazy(() => import('pages/profile/index')));
 const PasswordSettings = Loadable(lazy(() => import('pages/settings/password')));
 const Contact = Loadable(lazy(() => import('pages/settings/contact')));
 
+//Categories
+const Categories = Loadable(lazy(() => import('pages/categories/index')));
 
 
 // ==============================|| MAIN ROUTING ||============================== //
@@ -85,6 +87,19 @@ const MainRoutes = {
             path: 'contact',
             element: <Contact />
           },
+
+        ]
+      },
+
+      {
+        path: 'categories',
+        children: [
+
+          {
+            path: '',
+            element: <Categories />
+          },
+
 
         ]
       },

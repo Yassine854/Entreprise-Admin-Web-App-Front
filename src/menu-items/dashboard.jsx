@@ -1,11 +1,13 @@
 // assets
-import { DashboardOutlined,AppstoreOutlined  } from '@ant-design/icons';
+import { DashboardOutlined,AppstoreOutlined,TagsOutlined ,ClusterOutlined } from '@ant-design/icons';
 
 // icons
 const icons = {
-  DashboardOutlined,AppstoreOutlined
-};
-
+    DashboardOutlined,
+    AppstoreOutlined,
+    TagsOutlined,
+    ClusterOutlined
+  };
 // ==============================|| MENU ITEMS - DASHBOARD ||============================== //
 
 const dashboard = {
@@ -22,11 +24,19 @@ const dashboard = {
       breadcrumbs: false
     },
     {
-        id: 'selection',
-        title: 'Selection',
+        id: 'parametrage',
+        title: 'Paramétres du site web',
         type: 'item',
         url: '/selection',
         icon: icons.AppstoreOutlined,
+        breadcrumbs: false
+      },
+      {
+        id: 'categories',
+        title: 'Categories',
+        type: 'item',
+        url: '/categories',
+        icon: icons.TagsOutlined,
         breadcrumbs: false
       }
   ]

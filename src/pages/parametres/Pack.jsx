@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../axiosInstance';
 import Swal from 'sweetalert2';
 import { Grid, Card, CardContent, Typography, CircularProgress, Box, IconButton } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'; // Material-UI icon
@@ -33,8 +33,7 @@ export default function PackSelection() {
         // Fetch packs from the Laravel API
         const fetchPacks = async () => {
             try {
-                axios.defaults.withCredentials = true;
-                const response = await axios.get('https://example.shop/api/packs');
+                const response = await axiosInstance.get('/packs');
                 if (Array.isArray(response.data)) {
                     setPacks(response.data);
                     setSelectedPack(user.pack_id); // Set the initial selected pack from local storage
@@ -66,7 +65,7 @@ export default function PackSelection() {
         if (result.isConfirmed) {
             try {
                 // Assuming you have an endpoint to handle the selection/update
-                const response = await axios.post(`https://example.shop/api/updatePack/${user.id}/${pack._id}`);
+                const response = await axios.post(`/updatePack/${user.id}/${pack._id}`);
                 if (response.status === 200) {
                     // Update the local storage
                     const updatedUser = { ...user, pack_id: pack._id };

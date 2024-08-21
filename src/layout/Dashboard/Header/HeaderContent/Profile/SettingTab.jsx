@@ -32,7 +32,7 @@ export default function SettingTab() {
         <ListItemText primary="Paramètres Compte" />
       </ListItemButton>
 
-      <ListItemButton selected={selectedIndex === 3} onClick={(event) => handleListItemClick(event, 1, '/settings/contact')}>
+      <ListItemButton selected={selectedIndex === 3} onClick={(event) => handleListItemClick(event, 3, '/settings/contact')}>
         <ListItemIcon>
           <CommentOutlined />
         </ListItemIcon>

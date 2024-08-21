@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../axiosInstance';
 import {
     Card,
     CardContent,
@@ -26,8 +26,7 @@ const ParametreForm = () => {
         const fetchParametre = async () => {
             if (!parametre) {
                 try {
-                    axios.defaults.withCredentials = true;
-                    const resp = await axios.get(`https://example.shop/api/parametres/show/${user.id}`);
+                    const resp = await axiosInstance.get(`/parametres/show/${user.id}`);
                     if (resp.status === 200) {
                         setParametre(resp.data.parametre);
                         setFormData(resp.data.parametre || {}); // Populate the form if parametre exists
@@ -60,13 +59,11 @@ const ParametreForm = () => {
         try {
             if (parametre) {
                 // Update existing parametre
-                axios.defaults.withCredentials = true;
-                await axios.put(`https://example.shop/api/parametres/update/${parametre._id}`, formData);
+                await axiosInstance.put(`/parametres/update/${parametre._id}`, formData);
                 setAlertMessage("Paramètre mis à jour avec succès.");
             } else {
                 // Create new parametre
-                axios.defaults.withCredentials = true;
-                const response = await axios.post(`https://example.shop/api/parametres/create/${user.id}`, formData);
+                const response = await axiosInstance.post(`/parametres/create/${user.id}`, formData);
                 if (response.status === 201) {
                     setParametre(response.data.parametre); // Update state to switch to update mode
                     setAlertMessage("Paramètre créé avec succès.");

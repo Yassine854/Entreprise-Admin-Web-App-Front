@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../../axiosInstance';
 
 // material-ui
 import Button from '@mui/material/Button';
@@ -61,9 +61,8 @@ export default function AuthRegister() {
 
   const fetchCsrfToken = async () => {
     try {
-        axios.defaults.withCredentials = true;
 
-      await axios.get('https://example.shop/api/csrf-cookie');
+      await axiosInstance.get('csrf-cookie');
       console.log("done");
     } catch (err) {
       setError('Failed to fetch CSRF token. Please try again.');
@@ -73,7 +72,7 @@ export default function AuthRegister() {
   const handleSubmit = async (values) => {
     await fetchCsrfToken();
     try {
-      const response = await axios.post('https://example.shop/api/CreateAdmin', {
+      const response = await axiosInstance.post('CreateAdmin', {
         name: values.name,
         email: values.email,
         tel: values.tel,

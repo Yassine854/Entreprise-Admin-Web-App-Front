@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../axiosInstance';
 import Swal from 'sweetalert2';
 import { Grid, Card, CardContent, Typography, CircularProgress, Box, IconButton } from '@mui/material';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'; // Material-UI icon
@@ -33,8 +33,7 @@ export default function OffreSelection() {
         // Fetch offres from the Laravel API
         const fetchOffres = async () => {
             try {
-                axios.defaults.withCredentials = true;
-                const response = await axios.get('https://example.shop/api/offres');
+                const response = await axiosInstance.get('/offres');
                 if (Array.isArray(response.data)) {
                     setOffres(response.data);
                     setSelectedOffre(user.offre_id); // Set the initial selected offre from local storage
@@ -66,7 +65,7 @@ export default function OffreSelection() {
         if (result.isConfirmed) {
             try {
                 // Assuming you have an endpoint to handle the selection/update
-                const response = await axios.post(`https://example.shop/api/updateOffre/${user.id}/${offre._id}`);
+                const response = await axiosInstance.post(`updateOffre/${user.id}/${offre._id}`);
                 if (response.status === 200) {
                     // Update the local storage
                     const updatedUser = { ...user, offre_id: offre._id };

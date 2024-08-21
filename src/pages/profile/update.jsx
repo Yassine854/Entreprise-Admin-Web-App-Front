@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../axiosInstance';
 import {
   Container,
   Card,
@@ -71,10 +71,9 @@ export default function Profile() {
     }
 
     try {
-      axios.defaults.withCredentials = true;
-      await axios.post(`https://example.shop/api/admins/update/${user.id}`, updatedFormData);
+      await axiosInstance.post(`admins/update/${user.id}`, updatedFormData);
 
-      const resp = await axios.get('https://example.shop/api/user');
+      const resp = await axiosInstance.get('/user');
       if (resp.status === 200) {
         localStorage.setItem('user', JSON.stringify(resp.data.data));
         setFormData({ ...formData, ...resp.data.data });
