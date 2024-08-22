@@ -11,9 +11,8 @@ const CategoryFormModal = ({ open, handleClose, category, onSave }) => {
     useEffect(() => {
         if (category) {
             setName(category.name);
-            setDescription(category.description || ''); // Ensure description can be empty
+            setDescription(category.description || '');
         } else {
-            // Clear form fields when modal is closed or no category is provided
             setName('');
             setDescription('');
         }

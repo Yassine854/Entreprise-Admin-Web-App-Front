@@ -28,6 +28,10 @@ const Contact = Loadable(lazy(() => import('pages/settings/contact')));
 //Categories
 const Categories = Loadable(lazy(() => import('pages/categories/index')));
 
+//Products
+const ProductCategory = Loadable(lazy(() => import('pages/products/category')));
+const IndexProducts = Loadable(lazy(() => import('pages/products/index')));
+
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -93,14 +97,25 @@ const MainRoutes = {
 
       {
         path: 'categories',
+        element: <Categories/>
+      },
+
+      {
+        path: 'products',
         children: [
-
           {
-            path: '',
-            element: <Categories />
-          },
-
-
+            path: 'categories',
+            children: [
+              {
+                path: ':id',
+                element: <IndexProducts />
+              },
+              {
+                path: '',
+                element: <ProductCategory />
+              }
+            ]
+          }
         ]
       },
 

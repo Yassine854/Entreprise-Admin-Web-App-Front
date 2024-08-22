@@ -38,6 +38,14 @@ const dashboard = {
         url: '/categories',
         icon: icons.TagsOutlined,
         breadcrumbs: false
+      },
+      {
+        id: 'ProductCategory',
+        title: 'Produits',
+        type: 'item',
+        url: '/products/categories',
+        icon: icons.TagsOutlined,
+        breadcrumbs: false
       }
   ]
 };
