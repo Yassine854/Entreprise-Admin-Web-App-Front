@@ -2,59 +2,62 @@ import React, { useEffect, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { Button, Container, Alert, TextField, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { useParams } from 'react-router-dom';
-import { EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
 import axiosInstance from '../../axiosInstance';
-import ProductFormModal from './modal';
-import ProductDetailModal from './show';
+import ClientFormModal from './modal';
 
-const ProductList = () => {
-    const [products, setProducts] = useState([]);
-    const [filteredProducts, setFilteredProducts] = useState([]);
+const ClientList = () => {
+    const [clients, setClients] = useState([]);
+    const [filteredClients, setFilteredClients] = useState([]);
     const [error, setError] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
-    const [detailModalOpen, setDetailModalOpen] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [selectedClient, setSelectedClient] = useState(null);
     const [alertMessage, setAlertMessage] = useState('');
     const [alertSeverity, setAlertSeverity] = useState('success');
     const [alertType, setAlertType] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [searchCriteria, setSearchCriteria] = useState('name');
     const theme = useTheme();
-    const { id: categoryId } = useParams();
+
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    const fetchClients = async () => {
+        try {
+            const response = await axiosInstance.get('/clients');
+            setClients(response.data.clients);
+            setFilteredClients(response.data.clients);
+        } catch (error) {
+            setError('Échec de la récupération des clients.');
+            console.error('Error fetching clients:', error);
+        }
+    };
 
     useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const response = await axiosInstance.get(`/products/categories/${categoryId}`);
-                setProducts(response.data);
-                setFilteredProducts(response.data);
-            } catch (error) {
-                setError('Échec de la récupération des produits.');
-                console.error(error);
-            }
-        };
-        fetchProducts();
-    }, [categoryId]);
+        fetchClients();
+    }, []);
 
     const handleSearch = () => {
-        const filtered = products.filter(product =>
-            product[searchCriteria].toLowerCase().includes(searchTerm.toLowerCase())
+        const filtered = clients.filter(client =>
+            client[searchCriteria].toLowerCase().includes(searchTerm.toLowerCase())
         );
-        setFilteredProducts(filtered);
+        setFilteredClients(filtered);
     };
 
     useEffect(() => {
         handleSearch();
-    }, [searchTerm, searchCriteria, products]);
+    }, [searchTerm, searchCriteria, clients]);
 
-    const handleDelete = async (id) => {
-        const confirmed = window.confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');
+    const handleBlock = async (id) => {
+        const confirmed = window.confirm('Êtes-vous sûr de vouloir bloquer ce client ?');
         if (confirmed) {
             try {
-                await axiosInstance.delete(`/products/${id}`);
-                setProducts(products.filter(product => product._id !== id));
-                setAlertMessage('Produit supprimé avec succès.');
+                await axiosInstance.put(`/admins/block/${id}`);
+                fetchClients();
+                setAlertMessage('Client bloqué avec succès.');
                 setAlertSeverity('success');
                 setAlertType('delete');
                 setTimeout(() => {
@@ -62,7 +65,7 @@ const ProductList = () => {
                     setAlertType('');
                 }, 3000);
             } catch (error) {
-                setAlertMessage('Échec de la suppression du produit.');
+                setAlertMessage('Échec de blocage du client.');
                 setAlertSeverity('error');
                 setAlertType('delete');
                 setTimeout(() => {
@@ -73,47 +76,64 @@ const ProductList = () => {
         }
     };
 
-    const openModalForEdit = (product) => {
-        setSelectedProduct(product);
+    const handleUnBlock = async (id) => {
+        const confirmed = window.confirm('Êtes-vous sûr de vouloir débloquer ce client ?');
+        if (confirmed) {
+            try {
+                await axiosInstance.put(`/admins/unblock/${id}`);
+                fetchClients();
+                setAlertMessage('Client débloqué avec succès.');
+                setAlertSeverity('success');
+                setAlertType('delete');
+                setTimeout(() => {
+                    setAlertMessage('');
+                    setAlertType('');
+                }, 3000);
+            } catch (error) {
+                setAlertMessage('Échec de déblocage du client.');
+                setAlertSeverity('error');
+                setAlertType('delete');
+                setTimeout(() => {
+                    setAlertMessage('');
+                    setAlertType('');
+                }, 3000);
+            }
+        }
+    };
+
+    const openModalForEdit = (client) => {
+        setSelectedClient(client);
         setModalOpen(true);
         setAlertType('');
     };
 
     const openModalForCreate = () => {
-        setSelectedProduct(null);
+        setSelectedClient(null);
         setModalOpen(true);
         setAlertType('');
     };
 
-    const openDetailModal = (product) => {
-        setSelectedProduct(product);
-        setDetailModalOpen(true);
-    };
-
     const handleSave = async () => {
         try {
-            const response = await axiosInstance.get(`/products/categories/${categoryId}`);
-            setProducts(response.data);
-            setFilteredProducts(response.data);
-            if (selectedProduct) {
-                setAlertMessage('Produit modifié avec succès.');
+            fetchClients();
+            if (selectedClient) {
+                setAlertMessage('Client modifié avec succès.');
                 setAlertSeverity('success');
                 setAlertType('edit');
             } else {
-                setAlertMessage('Produit ajouté avec succès.');
+                setAlertMessage('Client ajouté avec succès.');
                 setAlertSeverity('success');
                 setAlertType('create');
             }
         } catch (error) {
-            setAlertMessage('Échec de la mise à jour des produits.');
+            setAlertMessage('Échec de la mise à jour des clients.');
             setAlertSeverity('error');
-            setAlertType(selectedProduct ? 'edit' : 'create');
+            setAlertType(selectedClient ? 'edit' : 'create');
         } finally {
             setTimeout(() => {
                 setAlertMessage('');
                 setAlertType('');
                 setModalOpen(false);
-                setDetailModalOpen(false);
             }, 3000);
         }
     };
@@ -125,8 +145,13 @@ const ProductList = () => {
             sortable: true,
         },
         {
-            name: 'Marque',
-            selector: row => row.brand,
+            name: 'Email',
+            selector: row => row.email,
+            sortable: true,
+        },
+        {
+            name: 'Ville',
+            selector: row => row.city,
             sortable: true,
         },
         {
@@ -137,28 +162,30 @@ const ProductList = () => {
                         variant="outlined"
                         color="primary"
                         sx={{ mr: 1 }}
-                        onClick={() => openDetailModal(row)}
-                        startIcon={<EyeOutlined />}
-                    >
-                        Détails
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        color="primary"
-                        sx={{ mr: 1 }}
                         onClick={() => openModalForEdit(row)}
-                        startIcon={<EditOutlined />}
+                        startIcon={<EditIcon />}
                     >
                         Modifier
                     </Button>
-                    <Button
-                        variant="outlined"
-                        color="error"
-                        onClick={() => handleDelete(row._id)}
-                        startIcon={<DeleteOutlined />}
-                    >
-                        Supprimer
-                    </Button>
+                    {row.blocked ? (
+                        <Button
+                            variant="outlined"
+                            color="success"
+                            onClick={() => handleUnBlock(row._id)}
+                            startIcon={<LockOpenIcon />}
+                        >
+                            Débloquer
+                        </Button>
+                    ) : (
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={() => handleBlock(row._id)}
+                            startIcon={<LockIcon />}
+                        >
+                            Bloquer
+                        </Button>
+                    )}
                 </div>
             ),
         },
@@ -176,7 +203,7 @@ const ProductList = () => {
                 color="primary"
                 sx={{ mb: 2 }}
                 onClick={openModalForCreate}
-                startIcon={<PlusOutlined />}
+                startIcon={<AddIcon />}
             >
                 Ajouter
             </Button>
@@ -190,39 +217,34 @@ const ProductList = () => {
                         label="Critère"
                     >
                         <MenuItem value="name">Nom</MenuItem>
-                        <MenuItem value="brand">Marque</MenuItem>
+                        <MenuItem value="email">Email</MenuItem>
+                        <MenuItem value="city">Ville</MenuItem>
                     </Select>
                 </FormControl>
                 <TextField
-                    label="Rechercher"
+                    label="Recherche"
                     variant="outlined"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    sx={{ width: '300px' }}
+                    sx={{ width: '300px' }} // Medium width for the search input
                 />
             </div>
             <DataTable
                 columns={columns}
-                data={filteredProducts}
+                data={filteredClients}
                 pagination
                 highlightOnHover
                 pointerOnHover
                 theme={theme.palette.mode}
             />
-            <ProductFormModal
+            <ClientFormModal
                 open={modalOpen}
                 handleClose={() => setModalOpen(false)}
-                product={selectedProduct}
+                client={selectedClient}
                 onSave={handleSave}
-                categoryId={categoryId}
-            />
-            <ProductDetailModal
-                open={detailModalOpen}
-                handleClose={() => setDetailModalOpen(false)}
-                productId={selectedProduct?._id}
             />
         </Container>
     );
 };
 
-export default ProductList;
+export default ClientList;

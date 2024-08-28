@@ -32,6 +32,14 @@ const dashboard = {
         breadcrumbs: false
       },
       {
+        id: 'clients',
+        title: 'Clients',
+        type: 'item',
+        url: '/clients',
+        icon: icons.AppstoreOutlined,
+        breadcrumbs: false
+      },
+      {
         id: 'categories',
         title: 'Categories',
         type: 'item',
@@ -46,7 +54,15 @@ const dashboard = {
         url: '/products/categories',
         icon: icons.TagsOutlined,
         breadcrumbs: false
-      }
+      },
+      {
+        id: 'commandes',
+        title: 'Commandes',
+        type: 'item',
+        url: '/commandes',
+        icon: icons.AppstoreOutlined,
+        breadcrumbs: false
+      },
   ]
 };
 

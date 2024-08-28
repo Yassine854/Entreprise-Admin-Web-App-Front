@@ -15,16 +15,15 @@ const ProductFormModal = ({ open, handleClose, product, onSave, categoryId: defa
     const user = JSON.parse(localStorage.getItem('user'));
 
     const fetchProducts = async () => {
-            try {
-                const response = await axiosInstance.get(`/products/categories/${categoryId}`);
-                setProducts(response.data);
-            } catch (error) {
-                console.error('Erreur lors de la récupération des Produits:', error);
-            }
-        };
+        try {
+            const response = await axiosInstance.get(`/products/categories/${categoryId}`);
+            setProducts(response.data);
+        } catch (error) {
+            console.error('Erreur lors de la récupération des Produits:', error);
+        }
+    };
 
     useEffect(() => {
-
         fetchProducts();
 
         if (product) {
@@ -67,19 +66,17 @@ const ProductFormModal = ({ open, handleClose, product, onSave, categoryId: defa
 
         try {
             if (product) {
-                await axiosInstance.post(`/products/${product._id}`, formData);
-            }
-            else {
+                await axiosInstance.put(`/products/${product._id}`, formData);
+            } else {
                 await axiosInstance.post('/products', formData);
             }
             onSave();
             handleClose();
-        }catch (error) {
+        } catch (error) {
             if (error.response.status === 422) {
-                setFieldErrors(error.response.data)
+                setFieldErrors(error.response.data);
             }
         }
-
     };
 
     return (
@@ -98,101 +95,110 @@ const ProductFormModal = ({ open, handleClose, product, onSave, categoryId: defa
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    width: 600,  // Increased width for a bigger modal
+                    width: '95%',  // Increased width
+                    maxWidth: 1200,  // Further increased maxWidth
                     bgcolor: 'background.paper',
-                    borderRadius: 1,
+                    borderRadius: 2,
                     boxShadow: 24,
-                    p: 4,
+                    height: '90vh',  // Increased height
+                    overflow: 'hidden',
                 }}
             >
-                <h2 id="modal-title">{product ? 'Modifier le produit' : 'Ajouter un produit'}</h2>
-                {fieldErrors.general && <Alert severity="error" style={{ marginBottom: '1rem' }}>{fieldErrors.general}</Alert>}
-                <form onSubmit={handleSubmit}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
+                <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <Box sx={{ p: 5, borderBottom: '1px solid #ccc' }}>
+                        <h2 id="modal-title">
+                            {product ? 'Modifier le produit' : 'Ajouter un produit'}
+                        </h2>
+                        {fieldErrors.general && <Alert severity="error" sx={{ mb: 2 }}>{fieldErrors.general}</Alert>}
+                    </Box>
+                    <Box sx={{ flex: 1, overflowY: 'auto', p: 3 }}>
+                        <form onSubmit={handleSubmit}>
+                            <Grid container spacing={4}>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Nom"
+                                        variant="outlined"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                        error={!!fieldErrors.name}
+                                        helperText={fieldErrors.name ? fieldErrors.name.join(' ') : ''}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Marque"
+                                        variant="outlined"
+                                        value={brand}
+                                        onChange={(e) => setBrand(e.target.value)}
+                                        error={!!fieldErrors.brand}
+                                        helperText={fieldErrors.brand ? fieldErrors.brand.join(' ') : ''}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Prix"
+                                        variant="outlined"
+                                        type="number"
+                                        value={price}
+                                        onChange={(e) => setPrice(e.target.value)}
+                                        error={!!fieldErrors.price}
+                                        InputProps={{
+                                            startAdornment: 'DT'
+                                        }}
+                                        helperText={fieldErrors.price ? fieldErrors.price.join(' ') : ''}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <TextField
+                                        fullWidth
+                                        label="Quantité"
+                                        variant="outlined"
+                                        type="number"
+                                        value={stock}
+                                        onChange={(e) => setStock(e.target.value)}
+                                        error={!!fieldErrors.stock}
+                                        helperText={fieldErrors.stock ? fieldErrors.stock.join(' ') : ''}
+                                    />
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <TextField
+                                        fullWidth
+                                        label="Description"
+                                        variant="outlined"
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        error={!!fieldErrors.description}
+                                        helperText={fieldErrors.description ? fieldErrors.description.join(' ') : ''}
+                                        multiline
+                                        rows={4}
+                                    />
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <TextField
+                                        fullWidth
+                                        variant="outlined"
+                                        type="file"
+                                        onChange={(e) => setImage(e.target.files[0])}
+                                        error={!!fieldErrors.image}
+                                        helperText={fieldErrors.image ? fieldErrors.image.join(' ') : ''}
+                                    />
+                                </Grid>
+                            </Grid>
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                color="primary"
+                                sx={{ mt: 2 }}
                                 fullWidth
-                                label="Nom"
-                                variant="outlined"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                error={!!fieldErrors.name}
-                                helperText={fieldErrors.name ? fieldErrors.name.join(' ') : ''}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                label="Marque"
-                                variant="outlined"
-                                value={brand}
-                                onChange={(e) => setBrand(e.target.value)}
-                                error={!!fieldErrors.brand}
-                                helperText={fieldErrors.brand ? fieldErrors.brand.join(' ') : ''}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                label="Prix"
-                                variant="outlined"
-                                type="number"
-                                value={price}
-                                onChange={(e) => setPrice(e.target.value)}
-                                error={!!fieldErrors.price}
-                                InputProps={{
-                                    startAdornment: 'DT'
-                                  }}
-
-                                helperText={fieldErrors.price ? fieldErrors.price.join(' ') : ''}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                fullWidth
-                                label="Stock"
-                                variant="outlined"
-                                type="number"
-                                value={stock}
-                                onChange={(e) => setStock(e.target.value)}
-                                error={!!fieldErrors.stock}
-                                helperText={fieldErrors.stock ? fieldErrors.stock.join(' ') : ''}
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                fullWidth
-                                label="Description"
-                                variant="outlined"
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                error={!!fieldErrors.description}
-                                helperText={fieldErrors.description ? fieldErrors.description.join(' ') : ''}
-                                multiline
-                                rows={4}
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <TextField
-                                fullWidth
-                                variant="outlined"
-                                type="file"
-                                onChange={(e) => setImage(e.target.files[0])}
-                                error={!!fieldErrors.image}
-                                helperText={fieldErrors.image ? fieldErrors.image.join(' ') : ''}
-                            />
-                        </Grid>
-                    </Grid>
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        style={{ marginTop: '1rem' }}
-                        fullWidth
-                    >
-                        {product ? 'Modifier' : 'Ajouter'}
-                    </Button>
-                </form>
+                            >
+                                {product ? 'Modifier' : 'Ajouter'}
+                            </Button>
+                        </form>
+                    </Box>
+                </Box>
             </Box>
         </Modal>
     );

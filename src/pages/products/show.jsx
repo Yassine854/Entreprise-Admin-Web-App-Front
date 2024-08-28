@@ -14,7 +14,6 @@ const ProductDetailModal = ({ open, handleClose, productId }) => {
                 try {
                     const response = await axiosInstance.get(`/products/${productId}`);
                     setProduct(response.data);
-                    console.log(response.data);
                     setError('');
                 } catch (error) {
                     console.error('Erreur lors de la récupération du produit:', error);
@@ -43,18 +42,21 @@ const ProductDetailModal = ({ open, handleClose, productId }) => {
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    width: { xs: '90%', sm: '80%', md: '50%' },  // Adjusted width for smaller size
-                    maxWidth: 600,  // Optional: to set a max width
+                    width: { xs: '95%', sm: '85%', md: '80%' },  // Wider modal width
+                    maxWidth: 1200,  // Increased max width for a larger modal
                     bgcolor: 'background.paper',
-                    borderRadius: 1,
+                    borderRadius: 2,  // Slightly rounded corners
                     boxShadow: 24,
-                    p: 2,  // Reduced padding for a more compact look
-                    overflow: 'auto',
+                    p: 4,  // Increased padding for more space
+                    overflowY: 'auto',  // Ensure vertical scrolling
+                    maxHeight: '90vh',  // Larger height to make sure it scrolls if needed
                 }}
             >
-                <h2 id="modal-title">Détails du produit</h2>
+                <h2 id="modal-title">
+                            Détail du produit
+                </h2>
                 {product && (
-                    <Grid container spacing={1}>  {/* Reduced spacing for a tighter layout */}
+                    <Grid container spacing={3}>  {/* Increased spacing for better layout */}
                         <Grid item xs={12} sm={6}>
                             <TextField
                                 fullWidth
@@ -62,7 +64,7 @@ const ProductDetailModal = ({ open, handleClose, productId }) => {
                                 variant="outlined"
                                 value={product.name || ''}
                                 InputProps={{ readOnly: true }}
-                                size="small"  // Smaller input size
+                                size="medium"  // Medium input size
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -72,7 +74,7 @@ const ProductDetailModal = ({ open, handleClose, productId }) => {
                                 variant="outlined"
                                 value={product.brand || ''}
                                 InputProps={{ readOnly: true }}
-                                size="small"  // Smaller input size
+                                size="medium"  // Medium input size
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -83,18 +85,18 @@ const ProductDetailModal = ({ open, handleClose, productId }) => {
                                 type="number"
                                 value={product.price || ''}
                                 InputProps={{ readOnly: true, startAdornment: 'DT' }}
-                                size="small"  // Smaller input size
+                                size="medium"  // Medium input size
                             />
                         </Grid>
                         <Grid item xs={12} sm={6}>
                             <TextField
                                 fullWidth
-                                label="Stock"
+                                label="Quantité"
                                 variant="outlined"
                                 type="number"
                                 value={product.stock || ''}
                                 InputProps={{ readOnly: true }}
-                                size="small"  // Smaller input size
+                                size="medium"  // Medium input size
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -104,9 +106,9 @@ const ProductDetailModal = ({ open, handleClose, productId }) => {
                                 variant="outlined"
                                 value={product.description || ''}
                                 multiline
-                                rows={3}  // Reduced number of rows for a more compact look
+                                rows={5}  // Increased rows
                                 InputProps={{ readOnly: true }}
-                                size="small"  // Smaller input size
+                                size="medium"  // Medium input size
                             />
                         </Grid>
                         <Grid item xs={12}>
@@ -121,7 +123,7 @@ const ProductDetailModal = ({ open, handleClose, productId }) => {
                                     sx={{
                                         maxWidth: '100%',
                                         height: 'auto',
-                                        maxHeight: 200,  // Reduced max height for image
+                                        maxHeight: 600,  // Increased max height for larger images
                                         borderRadius: 1,
                                         boxShadow: 2,
                                         display: 'block',

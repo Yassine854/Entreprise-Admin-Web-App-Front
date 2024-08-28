@@ -25,12 +25,18 @@ const ShowProfile = Loadable(lazy(() => import('pages/profile/index')));
 const PasswordSettings = Loadable(lazy(() => import('pages/settings/password')));
 const Contact = Loadable(lazy(() => import('pages/settings/contact')));
 
+//Commandes
+const Clients = Loadable(lazy(() => import('pages/clients/index')));
+
 //Categories
 const Categories = Loadable(lazy(() => import('pages/categories/index')));
 
 //Products
 const ProductCategory = Loadable(lazy(() => import('pages/products/category')));
 const IndexProducts = Loadable(lazy(() => import('pages/products/index')));
+
+//Commandes
+const Commande = Loadable(lazy(() => import('pages/commandes/index')));
 
 
 // ==============================|| MAIN ROUTING ||============================== //
@@ -117,6 +123,15 @@ const MainRoutes = {
             ]
           }
         ]
+      },
+      {
+        path: 'clients',
+        element: <Clients/>
+      },
+
+      {
+        path: 'commandes',
+        element: <Commande/>
       },
 
 
