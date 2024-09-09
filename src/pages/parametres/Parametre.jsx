@@ -8,20 +8,44 @@ import {
     Button,
     Typography,
     Alert,
-    Grid
+    Grid,
+    Autocomplete,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle
 } from '@mui/material';
 
 const ParametreForm = () => {
     const [formData, setFormData] = useState({
         title: '', description: '', key_word: '', temps_travail: '',
         email: '', url_fb: '', url_insta: '', url_youtube: '',
-        url_tiktok: '', url_twiter: '', mode_payement: ''
+        url_tiktok: '', url_twiter: '', mode_payement: '', nature_id: ''
     });
     const [parametre, setParametre] = useState(null);
     const [errors, setErrors] = useState({});
     const [alertMessage, setAlertMessage] = useState('');
+    const [natures, setNatures] = useState([]);
+    const [openAddNature, setOpenAddNature] = useState(false);
+    const [newNature, setNewNature] = useState('');
     const user = JSON.parse(localStorage.getItem('user'));
+    const [fieldErrors, setFieldErrors] = useState({});
 
+    // Récupérer les natures
+    useEffect(() => {
+        const fetchNatures = async () => {
+            try {
+                const response = await axiosInstance.get('/natures');
+                setNatures(response.data || []);
+            } catch (error) {
+                console.error('Erreur lors de la récupération des natures:', error);
+            }
+        };
+
+        fetchNatures();
+    }, []);
+
+    // Récupérer le paramètre
     useEffect(() => {
         const fetchParametre = async () => {
             if (!parametre) {
@@ -29,7 +53,7 @@ const ParametreForm = () => {
                     const resp = await axiosInstance.get(`/parametres/show/${user.id}`);
                     if (resp.status === 200) {
                         setParametre(resp.data.parametre);
-                        setFormData(resp.data.parametre || {}); // Populate the form if parametre exists
+                        setFormData(resp.data.parametre || {});
                     }
                 } catch (error) {
                     if (error.response && error.response.status === 401) {
@@ -47,8 +71,13 @@ const ParametreForm = () => {
         setFormData(prevData => ({ ...prevData, [name]: value }));
     };
 
+    const handleNatureChange = (event, value) => {
+        setFormData(prevData => ({ ...prevData, nature_id: value ? value._id : '' }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+
 
         if (!user || !user.id) {
             setAlertMessage("Utilisateur non valide.");
@@ -58,14 +87,12 @@ const ParametreForm = () => {
 
         try {
             if (parametre) {
-                // Update existing parametre
                 await axiosInstance.put(`/parametres/update/${parametre._id}`, formData);
                 setAlertMessage("Paramètre mis à jour avec succès.");
             } else {
-                // Create new parametre
                 const response = await axiosInstance.post(`/parametres/create/${user.id}`, formData);
                 if (response.status === 201) {
-                    setParametre(response.data.parametre); // Update state to switch to update mode
+                    setParametre(response.data.parametre);
                     setAlertMessage("Paramètre créé avec succès.");
                 } else {
                     throw new Error("Erreur lors de la création du paramètre.");
@@ -76,6 +103,33 @@ const ParametreForm = () => {
             console.error("Erreur lors de l'enregistrement du paramètre", error.response);
             setAlertMessage("Erreur lors de l'enregistrement du paramètre.");
             setTimeout(() => setAlertMessage(''), 3000);
+        }
+    };
+
+    const handleOpenAddNature = () => {
+        setOpenAddNature(true);
+    };
+
+    const handleCloseAddNature = () => {
+        setFieldErrors('');
+        setOpenAddNature(false);
+    };
+
+    const handleAddNature = async () => {
+        try {
+            const response = await axiosInstance.post('/natures', { name: newNature });
+            if (response.status === 201) {
+                setNatures([...natures, response.data]);
+                setNewNature('');
+                setOpenAddNature(false);
+                setAlertMessage("Nature Ajoutée avec succées.");
+                setTimeout(() => setAlertMessage(''), 3000);
+                setFieldErrors('');
+            }
+        } catch (error) {
+            if (error.response.status === 422) {
+                setFieldErrors(error.response.data);
+            }
         }
     };
 
@@ -92,18 +146,21 @@ const ParametreForm = () => {
                 )}
                 <form onSubmit={handleSubmit}>
                     <Grid container spacing={3}>
+                        {/* Sélectionner la nature */}
                         <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Titre"
-                                name="title"
-                                value={formData.title || ''}
-                                onChange={handleChange}
-                                fullWidth
-                                variant="outlined"
-                                error={Boolean(errors.title)}
-                                helperText={errors.title}
+                            <Autocomplete
+                                options={natures}
+                                getOptionLabel={(option) => option.name}
+                                value={natures.find(nature => nature._id === formData.nature_id) || null}
+                                onChange={handleNatureChange}
+                                renderInput={(params) => (
+                                    <TextField {...params} label="Nature" variant="outlined" fullWidth />
+                                )}
                             />
+                            <Button onClick={handleOpenAddNature} sx={{ mt: 2 }}>Ajouter une nouvelle nature</Button>
                         </Grid>
+
+                        {/* Autres champs du formulaire */}
                         <Grid item xs={12} sm={6}>
                             <TextField
                                 label="Description"
@@ -233,6 +290,33 @@ const ParametreForm = () => {
                     </Button>
                 </form>
             </CardContent>
+
+            {/* Ajouter une nouvelle nature */}
+            <Dialog
+    open={openAddNature}
+    onClose={handleCloseAddNature}
+    maxWidth="xs" // Increases the width of the dialog
+    fullWidth // Ensures the dialog takes full width of the maxWidth value
+>
+    <DialogTitle>Ajouter une nouvelle nature</DialogTitle>
+    <DialogContent>
+        <TextField
+            label="Nom de la nature"
+            value={newNature}
+            onChange={(e) => setNewNature(e.target.value)}
+            fullWidth
+            variant="outlined"
+            error={!!fieldErrors.name}
+            helperText={fieldErrors.name ? fieldErrors.name.join(' ') : ''}
+        />
+    </DialogContent>
+    <DialogActions>
+        <Button onClick={handleCloseAddNature}>Annuler</Button>
+        <Button onClick={handleAddNature} variant="contained" color="primary">
+            Ajouter
+        </Button>
+    </DialogActions>
+</Dialog>
         </Card>
     );
 };

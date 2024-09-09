@@ -23,8 +23,8 @@ const CategoryList = () => {
         fetchCategories();
     }, [user.id]);
 
-    const handleNavigate = (categoryId) => {
-        navigate(`${categoryId}`);
+    const handleNavigate = (categoryId, categoryName) => {
+        navigate(`/products/categories/${categoryId}`, { state: { categoryName } });
     };
 
     const columns = [
@@ -39,7 +39,7 @@ const CategoryList = () => {
                 <Button
                     variant="outlined"
                     color="primary"
-                    onClick={() => handleNavigate(row._id)}
+                    onClick={() => handleNavigate(row._id, row.name)}
                 >
                     Produits
                 </Button>

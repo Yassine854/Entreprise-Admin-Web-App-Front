@@ -7,8 +7,24 @@ const CategoryFormModal = ({ open, handleClose, category, onSave }) => {
     const [description, setDescription] = useState('');
     const [error, setError] = useState('');
     const user = JSON.parse(localStorage.getItem('user'));
+    const [parametre, setParametre] = useState([]);
+
+    const fetchParametre = async () => {
+        try {
+            const resp = await axiosInstance.get(`/parametres/show/${user.id}`);
+            if (resp.status === 200) {
+                setParametre(resp.data.parametre);
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 401) {
+                console.log(error);
+            }
+        }
+};
 
     useEffect(() => {
+        fetchParametre();
+
         if (category) {
             setName(category.name);
             setDescription(category.description || '');
@@ -26,7 +42,7 @@ const CategoryFormModal = ({ open, handleClose, category, onSave }) => {
             if (category) {
                 await axiosInstance.put(`/categories/${category._id}`, payload);
             } else {
-                await axiosInstance.post('/categories', payload);
+                await axiosInstance.post(`/categories/${parametre.nature_id}`, payload);
             }
             onSave(); // Refresh the category list
             handleClose(); // Close the modal

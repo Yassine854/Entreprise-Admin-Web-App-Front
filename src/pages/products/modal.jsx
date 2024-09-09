@@ -66,7 +66,7 @@ const ProductFormModal = ({ open, handleClose, product, onSave, categoryId: defa
 
         try {
             if (product) {
-                await axiosInstance.put(`/products/${product._id}`, formData);
+                await axiosInstance.post(`/products/${product._id}`, formData);
             } else {
                 await axiosInstance.post('/products', formData);
             }

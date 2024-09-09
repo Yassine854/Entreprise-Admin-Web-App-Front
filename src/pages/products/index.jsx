@@ -7,6 +7,8 @@ import { EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined } from '@ant-de
 import axiosInstance from '../../axiosInstance';
 import ProductFormModal from './modal';
 import ProductDetailModal from './show';
+import { Typography, Grid } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 
 const ProductList = () => {
     const [products, setProducts] = useState([]);
@@ -22,6 +24,8 @@ const ProductList = () => {
     const [searchCriteria, setSearchCriteria] = useState('name');
     const theme = useTheme();
     const { id: categoryId } = useParams();
+    const location = useLocation();
+    const categoryName = location.state?.categoryName || 'Catégorie';
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -105,6 +109,7 @@ const ProductList = () => {
                 setAlertType('create');
             }
         } catch (error) {
+            console.log(error);
             setAlertMessage('Échec de la mise à jour des produits.');
             setAlertSeverity('error');
             setAlertType(selectedProduct ? 'edit' : 'create');
@@ -171,6 +176,11 @@ const ProductList = () => {
                     {alertMessage}
                 </Alert>
             )}
+            <Grid item xs={12}>
+    <Typography variant="h5" gutterBottom>
+    {`Catégorie: ${categoryName}`}
+</Typography>
+</Grid>
             <Button
                 variant="contained"
                 color="primary"

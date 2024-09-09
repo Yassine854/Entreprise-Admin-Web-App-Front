@@ -12,6 +12,8 @@ const SamplePage = Loadable(lazy(() => import('pages/extra-pages/sample-page')))
 
 
 //Parametres
+const NotFound = Loadable(lazy(() => import('pages/NotFound')));
+
 const Selection = Loadable(lazy(() => import('pages/parametres/Selection')));
 const Pack = Loadable(lazy(() => import('pages/parametres/Pack')));
 const Offre = Loadable(lazy(() => import('pages/parametres/Offre')));
@@ -50,9 +52,13 @@ const MainRoutes = {
   ),
   children: [
     {
-      path: '/',
+      path: '/dashboard',
       element: <DashboardDefault />
     },
+    {
+        path: '*',
+        element: <NotFound />
+      },
     {
       path: 'selection',
       element: <Selection/>
@@ -137,7 +143,7 @@ const MainRoutes = {
 
 
     {
-      path: 'dashboard',
+      path: '',
       children: [
         {
           path: 'default',

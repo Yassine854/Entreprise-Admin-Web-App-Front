@@ -1,16 +1,21 @@
 // src/components/CategoryList.js
 import React, { useEffect, useState } from 'react';
 import DataTable from 'react-data-table-component';
-import { Button, Container, Alert } from '@mui/material';
+import { Button, Container, Alert, TextField, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import axiosInstance from '../../axiosInstance';
 import CategoryFormModal from './modal';
+import SearchIcon from '@mui/icons-material/Search';
+
 
 const CategoryList = () => {
     const [categories, setCategories] = useState([]);
+    const [parametre, setParametre] = useState([]);
+    const [filteredCategories, setFilteredCategories] = useState([]);
+
     const [error, setError] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState(null);
@@ -18,20 +23,47 @@ const CategoryList = () => {
     const [alertSeverity, setAlertSeverity] = useState('success'); // 'success' or 'error'
     const [alertType, setAlertType] = useState(''); // 'create' or 'edit'
     const theme = useTheme();
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchCriteria, setSearchCriteria] = useState('name');
     const user = JSON.parse(localStorage.getItem('user')); // Get user from localStorage
 
     useEffect(() => {
-        const fetchCategories = async () => {
+        const fetchData = async () => {
             try {
-                const response = await axiosInstance.get(`/categories/${user.id}`);
-                setCategories(response.data);
+                // Fetch parametre
+                const parametreResponse = await axiosInstance.get(`/parametres/show/${user.id}`);
+                setParametre(parametreResponse.data.parametre);
+
+                // Fetch categories only if parametre is successfully fetched
+                if (parametreResponse.data.parametre?.nature_id) {
+                    const categoriesResponse = await axiosInstance.get(`/categories/${parametreResponse.data.parametre.nature_id}`);
+                    setCategories(categoriesResponse.data);
+                }
             } catch (error) {
-                setError('Échec de la récupération des catégories.');
+                if (error.message.includes('parametre')) {
+                    setError('Échec de la récupération des paramétres.');
+                } else {
+                    setError('Échec de la récupération des catégories.');
+                }
                 console.error(error);
             }
         };
-        fetchCategories();
-    }, [user.id]);
+
+        if (open) {
+            fetchData();
+        }
+    }, [user.id, open]);
+
+    useEffect(() => {
+        const handleSearch = () => {
+            const filtered = categories.filter(category =>
+                category[searchCriteria]?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredCategories(filtered);
+        };
+
+        handleSearch();
+    }, [searchTerm, searchCriteria, categories]);
 
     const handleDelete = async (id) => {
         const confirmed = window.confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?');
@@ -72,7 +104,7 @@ const CategoryList = () => {
 
     const handleSave = async () => {
         try {
-            const response = await axiosInstance.get(`/categories/${user.id}`);
+            const response = await axiosInstance.get(`/categories/${parametre.nature_id}`);
             setCategories(response.data);
             if (selectedCategory) {
                 setAlertMessage('Catégorie modifiée avec succès.');
@@ -135,18 +167,7 @@ const CategoryList = () => {
 
     return (
         <Container maxWidth={false} disableGutters>
-
-            {alertMessage && alertType === 'create' && (
-                <Alert severity={alertSeverity} style={{ marginBottom: '1rem' }}>
-                    {alertMessage}
-                </Alert>
-            )}
-            {alertMessage && alertType === 'edit' && (
-                <Alert severity={alertSeverity} style={{ marginBottom: '1rem' }}>
-                    {alertMessage}
-                </Alert>
-            )}
-            {alertMessage && alertType === 'delete' && (
+            {alertMessage && (
                 <Alert severity={alertSeverity} style={{ marginBottom: '1rem' }}>
                     {alertMessage}
                 </Alert>
@@ -161,9 +182,33 @@ const CategoryList = () => {
                 Ajouter
             </Button>
             {error && <p>{error}</p>}
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
+                <FormControl sx={{ minWidth: 120, marginRight: 2 }}>
+                    <InputLabel>Critère</InputLabel>
+                    <Select
+                        value={searchCriteria}
+                        onChange={(e) => setSearchCriteria(e.target.value)}
+                        label="Critère"
+                    >
+                        <MenuItem value="name">Nom</MenuItem>
+                    </Select>
+                </FormControl>
+                <TextField
+                    label="Rechercher"
+                    variant="outlined"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    sx={{ width: '300px' }} // Medium width for the search input
+                    InputProps={{
+                        endAdornment: (
+                            <SearchIcon />
+                        ),
+                    }}
+                />
+            </div>
             <DataTable
                 columns={columns}
-                data={categories}
+                data={filteredCategories}
                 pagination
                 highlightOnHover
                 pointerOnHover
