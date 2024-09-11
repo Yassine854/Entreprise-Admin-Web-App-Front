@@ -31,7 +31,7 @@ const ParametreForm = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     const [fieldErrors, setFieldErrors] = useState({});
 
-    // Récupérer les natures
+    // Fetch natures
     useEffect(() => {
         const fetchNatures = async () => {
             try {
@@ -41,11 +41,10 @@ const ParametreForm = () => {
                 console.error('Erreur lors de la récupération des natures:', error);
             }
         };
-
         fetchNatures();
     }, []);
 
-    // Récupérer le paramètre
+    // Fetch parameters
     useEffect(() => {
         const fetchParametre = async () => {
             if (!parametre) {
@@ -62,7 +61,6 @@ const ParametreForm = () => {
                 }
             }
         };
-
         fetchParametre();
     }, [user.id, parametre]);
 
@@ -78,10 +76,17 @@ const ParametreForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        const validationErrors = {};
 
-        if (!user || !user.id) {
-            setAlertMessage("Utilisateur non valide.");
-            setTimeout(() => setAlertMessage(''), 3000);
+        // Check if nature is selected
+        if (!formData.nature_id) {
+            validationErrors.nature = 'La nature est obligatoire.';
+        }
+
+        // Other validations...
+
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
             return;
         }
 
@@ -99,10 +104,10 @@ const ParametreForm = () => {
                 }
             }
             setTimeout(() => setAlertMessage(''), 3000);
+            setErrors('');
         } catch (error) {
             console.error("Erreur lors de l'enregistrement du paramètre", error.response);
-            setAlertMessage("Erreur lors de l'enregistrement du paramètre.");
-            setTimeout(() => setAlertMessage(''), 3000);
+            setFieldErrors(error.response.data);
         }
     };
 
@@ -122,9 +127,11 @@ const ParametreForm = () => {
                 setNatures([...natures, response.data]);
                 setNewNature('');
                 setOpenAddNature(false);
-                setAlertMessage("Nature Ajoutée avec succées.");
+                setAlertMessage("Nature Ajoutée avec succès.");
                 setTimeout(() => setAlertMessage(''), 3000);
                 setFieldErrors('');
+                setErrors('');
+
             }
         } catch (error) {
             if (error.response.status === 422) {
@@ -146,7 +153,7 @@ const ParametreForm = () => {
                 )}
                 <form onSubmit={handleSubmit}>
                     <Grid container spacing={3}>
-                        {/* Sélectionner la nature */}
+                        {/* Nature field with error display */}
                         <Grid item xs={12} sm={6}>
                             <Autocomplete
                                 options={natures}
@@ -154,13 +161,20 @@ const ParametreForm = () => {
                                 value={natures.find(nature => nature._id === formData.nature_id) || null}
                                 onChange={handleNatureChange}
                                 renderInput={(params) => (
-                                    <TextField {...params} label="Nature" variant="outlined" fullWidth />
+                                    <TextField
+                                        {...params}
+                                        label="Nature"
+                                        variant="outlined"
+                                        fullWidth
+                                        error={Boolean(errors.nature)}
+                                        helperText={errors.nature}
+                                    />
                                 )}
                             />
                             <Button onClick={handleOpenAddNature} sx={{ mt: 2 }}>Ajouter une nouvelle nature</Button>
                         </Grid>
 
-                        {/* Autres champs du formulaire */}
+                        {/* Other form fields */}
                         <Grid item xs={12} sm={6}>
                             <TextField
                                 label="Description"
@@ -212,6 +226,7 @@ const ParametreForm = () => {
                                 helperText={errors.email}
                             />
                         </Grid>
+                        {/* Other URL fields */}
                         <Grid item xs={12} sm={6}>
                             <TextField
                                 label="URL Facebook"
@@ -291,32 +306,32 @@ const ParametreForm = () => {
                 </form>
             </CardContent>
 
-            {/* Ajouter une nouvelle nature */}
+            {/* Add New Nature Dialog */}
             <Dialog
-    open={openAddNature}
-    onClose={handleCloseAddNature}
-    maxWidth="xs" // Increases the width of the dialog
-    fullWidth // Ensures the dialog takes full width of the maxWidth value
->
-    <DialogTitle>Ajouter une nouvelle nature</DialogTitle>
-    <DialogContent>
-        <TextField
-            label="Nom de la nature"
-            value={newNature}
-            onChange={(e) => setNewNature(e.target.value)}
-            fullWidth
-            variant="outlined"
-            error={!!fieldErrors.name}
-            helperText={fieldErrors.name ? fieldErrors.name.join(' ') : ''}
-        />
-    </DialogContent>
-    <DialogActions>
-        <Button onClick={handleCloseAddNature}>Annuler</Button>
-        <Button onClick={handleAddNature} variant="contained" color="primary">
-            Ajouter
-        </Button>
-    </DialogActions>
-</Dialog>
+                open={openAddNature}
+                onClose={handleCloseAddNature}
+                maxWidth="xs"
+                fullWidth
+            >
+                <DialogTitle>Ajouter une nouvelle nature</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        label="Nom de la nature"
+                        value={newNature}
+                        onChange={(e) => setNewNature(e.target.value)}
+                        fullWidth
+                        variant="outlined"
+                        error={!!fieldErrors.name}
+                        helperText={fieldErrors.name ? fieldErrors.name.join(' ') : ''}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseAddNature}>Annuler</Button>
+                    <Button onClick={handleAddNature} variant="contained" color="primary">
+                        Ajouter
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Card>
     );
 };

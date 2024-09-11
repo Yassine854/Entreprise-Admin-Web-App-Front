@@ -33,6 +33,10 @@ const Clients = Loadable(lazy(() => import('pages/clients/index')));
 //Categories
 const Categories = Loadable(lazy(() => import('pages/categories/index')));
 
+//Attributes & Values
+const Attributes = Loadable(lazy(() => import('pages/attributes/index')));
+const Values = Loadable(lazy(() => import('pages/attributes/value')));
+
 //Products
 const ProductCategory = Loadable(lazy(() => import('pages/products/category')));
 const IndexProducts = Loadable(lazy(() => import('pages/products/index')));
@@ -113,13 +117,27 @@ const MainRoutes = {
       },
 
       {
+        path: 'attributes',
+        children: [
+              {
+                path: '',
+                element: <Attributes />
+              },
+              {
+                path: ':id',
+                element: <Values />
+              },
+          ]
+      },
+
+      {
         path: 'products',
         children: [
           {
             path: 'categories',
             children: [
               {
-                path: ':id',
+                path: ':adminId/:categoryId',
                 element: <IndexProducts />
               },
               {

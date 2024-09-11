@@ -1,134 +1,119 @@
-// src/components/CategoryList.js
 import React, { useEffect, useState } from 'react';
 import DataTable from 'react-data-table-component';
-import { Button,Grid,Typography, Container, Alert, TextField, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { Button, Grid, Typography, Container, Alert, TextField, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import axiosInstance from '../../axiosInstance';
-import CategoryFormModal from './modal';
 import SearchIcon from '@mui/icons-material/Search';
+import ListIcon from '@mui/icons-material/List'; // Import ListIcon for "Valeurs"
+import axiosInstance from '../../axiosInstance';
+import AttributeFormModal from './AttributeModal';
+import { useNavigate } from 'react-router-dom';
 
 
-const CategoryList = () => {
-    const [categories, setCategories] = useState([]);
-    const [parametre, setParametre] = useState([]);
-    const [filteredCategories, setFilteredCategories] = useState([]);
-
+const AttributeList = () => {
+    const [attributes, setAttributes] = useState([]);
+    const [filteredAttributes, setFilteredAttributes] = useState([]);
     const [error, setError] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [selectedAttribute, setSelectedAttribute] = useState(null);
     const [alertMessage, setAlertMessage] = useState('');
-    const [alertSeverity, setAlertSeverity] = useState('success'); // 'success' or 'error'
-    const [alertType, setAlertType] = useState(''); // 'create' or 'edit'
-    const theme = useTheme();
+    const [alertSeverity, setAlertSeverity] = useState('success');
     const [searchTerm, setSearchTerm] = useState('');
     const [searchCriteria, setSearchCriteria] = useState('name');
-    const user = JSON.parse(localStorage.getItem('user')); // Get user from localStorage
+    const theme = useTheme();
+    const navigate = useNavigate();
 
+    // Fetch user from localStorage
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    // Fetch attributes on component mount
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Fetch parametre
-                const parametreResponse = await axiosInstance.get(`/parametres/show/${user.id}`);
-                setParametre(parametreResponse.data.parametre);
-
-
-                // Fetch categories only if parametre is successfully fetched
-                if (parametreResponse.data.parametre?.nature_id) {
-                    const categoriesResponse = await axiosInstance.get(`/categories/${parametreResponse.data.parametre.nature_id}`);
-                    setCategories(categoriesResponse.data);
-                }
+                const attributesResponse = await axiosInstance.get('/attributes');
+                setAttributes(attributesResponse.data);
             } catch (error) {
-                if (error.message.includes('parametre')) {
-                    setError('Échec de la récupération des paramétres.');
-                } else {
-                    setError('Échec de la récupération des catégories.');
-                }
+                setError('Échec de la récupération des attributs.');
                 console.error(error);
             }
         };
 
-        if (open) {
-            fetchData();
-        }
-    }, [user.id, open]);
+        fetchData();
+    }, []);
 
+    // Filter attributes based on search term
     useEffect(() => {
         const handleSearch = () => {
-            const filtered = categories.filter(category =>
-                category[searchCriteria]?.toLowerCase().includes(searchTerm.toLowerCase())
+            const filtered = attributes.filter(attribute =>
+                attribute[searchCriteria]?.toLowerCase().includes(searchTerm.toLowerCase())
             );
-            setFilteredCategories(filtered);
+            setFilteredAttributes(filtered);
         };
 
         handleSearch();
-    }, [searchTerm, searchCriteria, categories]);
+    }, [searchTerm, searchCriteria, attributes]);
 
+    // Handle delete action
     const handleDelete = async (id) => {
-        const confirmed = window.confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?');
+        const confirmed = window.confirm('Êtes-vous sûr de vouloir supprimer cet attribut ?');
         if (confirmed) {
             try {
-                await axiosInstance.delete(`/categories/${id}`);
-                setCategories(categories.filter(category => category._id !== id));
-                setAlertMessage('Catégorie supprimée avec succès.');
+                await axiosInstance.delete(`/attributes/${id}`);
+                setAttributes(attributes.filter(attribute => attribute._id !== id));
+                setAlertMessage('Attribut supprimé avec succès.');
                 setAlertSeverity('success');
-                setAlertType('delete');
-                setTimeout(() => {
-                    setAlertMessage('');
-                    setAlertType('');
-                }, 3000);
             } catch (error) {
-                setAlertMessage('Échec de la suppression de la catégorie.');
+                setAlertMessage('Échec de la suppression de l\'attribut.');
                 setAlertSeverity('error');
-                setAlertType('delete');
+            } finally {
                 setTimeout(() => {
                     setAlertMessage('');
-                    setAlertType('');
                 }, 3000);
             }
         }
     };
 
-    const openModalForEdit = (category) => {
-        setSelectedCategory(category);
+    // Open modal for editing an attribute
+    const openModalForEdit = (attribute) => {
+        setSelectedAttribute(attribute);
         setModalOpen(true);
-        setAlertType('');
     };
 
+    const openValueComponent = (attribute) => {
+        navigate(`/attributes/${attribute._id}`, {
+            state: { attributeName: attribute.name } // Passing the attribute name
+        });
+    };
+
+
+    // Open modal for creating a new attribute
     const openModalForCreate = () => {
-        setSelectedCategory(null);
+        setSelectedAttribute(null);
         setModalOpen(true);
-        setAlertType('');
     };
 
+    // Handle save action (for create or edit)
     const handleSave = async () => {
         try {
-            const response = await axiosInstance.get(`/categories/${parametre.nature_id}`);
-            setCategories(response.data);
-            if (selectedCategory) {
-                setAlertMessage('Catégorie modifiée avec succès.');
-                setAlertSeverity('success');
-                setAlertType('edit');
-            } else {
-                setAlertMessage('Catégorie ajoutée avec succès.');
-                setAlertSeverity('success');
-                setAlertType('create');
-            }
+            const response = await axiosInstance.get('/attributes');
+            setAttributes(response.data);
+
+            setAlertMessage(selectedAttribute ? 'Attribut modifié avec succès.' : 'Attribut ajouté avec succès.');
+            setAlertSeverity('success');
         } catch (error) {
-            setAlertMessage('Échec de la mise à jour des catégories.');
+            setAlertMessage('Échec de la mise à jour des attributs.');
             setAlertSeverity('error');
-            setAlertType(selectedCategory ? 'edit' : 'create');
         } finally {
             setTimeout(() => {
                 setAlertMessage('');
-                setAlertType('');
                 setModalOpen(false);
             }, 3000);
         }
     };
 
+    // Table columns definition
     const columns = [
         {
             name: 'Nom',
@@ -136,14 +121,23 @@ const CategoryList = () => {
             sortable: true,
         },
         {
-            name: 'Description',
-            selector: row => row.description,
+            name: 'Total valeurs',
+            selector: row => row.values.length,
             sortable: true,
         },
         {
             name: 'Actions',
             cell: row => (
                 <div>
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        sx={{ mr: 1 }}
+                        onClick={() => openValueComponent(row)}
+                        startIcon={<ListIcon />} // Use ListIcon for "Valeurs"
+                    >
+                        Valeurs
+                    </Button>
                     <Button
                         variant="outlined"
                         color="primary"
@@ -173,17 +167,7 @@ const CategoryList = () => {
                     {alertMessage}
                 </Alert>
             )}
-       <Grid item xs={12}>
-    {parametre && parametre.nature ? (
-        <Typography variant="h5" gutterBottom>
-            {`Nature: ${parametre.nature.name}`} {/* Assuming the nature has a 'name' field */}
-        </Typography>
-    ) : (
-        <Typography variant="h5" gutterBottom>
-            {'Nature:'}
-        </Typography>
-    )}
-</Grid>
+
             <Button
                 variant="contained"
                 color="primary"
@@ -193,7 +177,9 @@ const CategoryList = () => {
             >
                 Ajouter
             </Button>
+
             {error && <p>{error}</p>}
+
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
                 <FormControl sx={{ minWidth: 120, marginRight: 2 }}>
                     <InputLabel>Critère</InputLabel>
@@ -212,28 +198,28 @@ const CategoryList = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     sx={{ width: '300px' }} // Medium width for the search input
                     InputProps={{
-                        endAdornment: (
-                            <SearchIcon />
-                        ),
+                        endAdornment: <SearchIcon />,
                     }}
                 />
             </div>
+
             <DataTable
                 columns={columns}
-                data={filteredCategories}
+                data={filteredAttributes}
                 pagination
                 highlightOnHover
                 pointerOnHover
                 theme={theme.palette.mode}
             />
-            <CategoryFormModal
+
+            <AttributeFormModal
                 open={modalOpen}
                 handleClose={() => setModalOpen(false)}
-                category={selectedCategory}
+                attribute={selectedAttribute}
                 onSave={handleSave}
             />
         </Container>
     );
 };
 
-export default CategoryList;
+export default AttributeList;

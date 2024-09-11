@@ -48,7 +48,7 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
 
     const fetchProducts = async () => {
         try {
-            const response = await axiosInstance.get(`/AdminProducts/${user.id}`);
+            const response = await axiosInstance.get(`/products/${user.id}`);
             setProducts(response.data);
         } catch (error) {
             console.error('Failed to fetch products:', error);

@@ -23,14 +23,15 @@ const ProductList = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [searchCriteria, setSearchCriteria] = useState('name');
     const theme = useTheme();
-    const { id: categoryId } = useParams();
+    const { categoryId: categoryId } = useParams();
     const location = useLocation();
     const categoryName = location.state?.categoryName || 'Catégorie';
+    const user = JSON.parse(localStorage.getItem('user'));
 
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const response = await axiosInstance.get(`/products/categories/${categoryId}`);
+                const response = await axiosInstance.get(`products/${user.id}/${categoryId}`);
                 setProducts(response.data);
                 setFilteredProducts(response.data);
             } catch (error) {

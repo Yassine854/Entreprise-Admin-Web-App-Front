@@ -53,6 +53,14 @@ const dashboard = {
       breadcrumbs: false
     },
     {
+        id: 'attributes',
+        title: 'Attributs',
+        type: 'item',
+        url: '/attributes',
+        icon: icons.TagsOutlined,
+        breadcrumbs: false
+      },
+    {
       id: 'ProductCategory',
       title: 'Produits',
       type: 'item',
