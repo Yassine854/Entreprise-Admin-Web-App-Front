@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../axiosInstance';
 import {
     Card,
+    Container,
+    IconButton,
     CardContent,
     TextField,
     MenuItem,
@@ -13,8 +15,11 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
+    Stack,
     DialogTitle
 } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const ParametreForm = () => {
     const [formData, setFormData] = useState({
@@ -30,6 +35,7 @@ const ParametreForm = () => {
     const [newNature, setNewNature] = useState('');
     const user = JSON.parse(localStorage.getItem('user'));
     const [fieldErrors, setFieldErrors] = useState({});
+    const navigate = useNavigate();
 
     // Fetch natures
     useEffect(() => {
@@ -141,11 +147,27 @@ const ParametreForm = () => {
     };
 
     return (
-        <Card sx={{ maxWidth: 'lg', mx: 'auto', p: 3 }}>
+
+<Container sx={{ position: 'relative' }} maxWidth={false}>
+<Card>
             <CardContent>
-                <Typography variant="h4" component="div" gutterBottom>
-                    Gérer vos paramètres de site
-                </Typography>
+            <Stack
+            sx={{ position: 'relative', p: 2 }}
+            spacing={2} // Adds spacing between stacked items
+            alignItems="flex-start" // Align items to the start
+        >
+            <IconButton
+                onClick={() => navigate(-1)}
+                sx={{
+                    color: 'text.primary',
+                }}
+            >
+                <ArrowBackIcon fontSize="large" />
+            </IconButton>
+            <Typography variant="h4" component="div" gutterBottom>
+                Gérer vos paramètres de site
+            </Typography>
+        </Stack>
                 {alertMessage && (
                     <Alert severity="success" sx={{ mb: 3 }}>
                         {alertMessage}
@@ -301,7 +323,7 @@ const ParametreForm = () => {
                         fullWidth
                         sx={{ mt: 3 }}
                     >
-                        {parametre ? 'Mettre à jour' : 'Créer'} Paramètre
+                        {parametre ? 'Modifier' : 'Créer'} Paramètres
                     </Button>
                 </form>
             </CardContent>
@@ -332,7 +354,8 @@ const ParametreForm = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
-        </Card>
+            </Card>
+        </Container>
     );
 };
 

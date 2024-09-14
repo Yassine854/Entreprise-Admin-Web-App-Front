@@ -22,6 +22,7 @@ const AuthGuard = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
+
   return children;
 };
 

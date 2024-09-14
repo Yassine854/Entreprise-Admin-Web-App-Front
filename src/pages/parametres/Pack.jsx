@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../axiosInstance';
-import Swal from 'sweetalert2';
-import { Grid, Card, CardContent, Typography, CircularProgress, Box, IconButton } from '@mui/material';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'; // Material-UI icon
+import {
+    Grid, Card, CardContent, Typography, CircularProgress, Box, IconButton, Modal, Button
+} from '@mui/material';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'; // Import ArrowBackIcon
 import { styled } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
 
 const StyledCard = styled(Card)(({ theme }) => ({
     position: 'relative',
@@ -27,10 +30,13 @@ export default function PackSelection() {
     const [selectedPack, setSelectedPack] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [openModal, setOpenModal] = useState(false);
+    const [packToSelect, setPackToSelect] = useState(null); // Track which pack is being selected
+
     const user = JSON.parse(localStorage.getItem('user'));
+    const navigate = useNavigate();
 
     useEffect(() => {
-        // Fetch packs from the Laravel API
         const fetchPacks = async () => {
             try {
                 const response = await axiosInstance.get('/packs');
@@ -49,40 +55,39 @@ export default function PackSelection() {
         };
 
         fetchPacks();
-    }, [user.pack_id]); // Depend on user.pack_id to refresh when it changes
+    }, [user.pack_id]);
 
-    const updatePack = async (pack) => {
-        const result = await Swal.fire({
-            title: 'Êtes-vous sûr ?',
-            text: "Vous ne pourrez pas revenir en arrière !",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Oui, sélectionnez-le !',
-        });
-
-        if (result.isConfirmed) {
-            try {
-                // Assuming you have an endpoint to handle the selection/update
-                const response = await axios.post(`/updatePack/${user.id}/${pack._id}`);
-                if (response.status === 200) {
-                    // Update the local storage
-                    const updatedUser = { ...user, pack_id: pack._id };
-                    localStorage.setItem('user', JSON.stringify(updatedUser));
-
-                    // Update state to reflect the selection
-                    setSelectedPack(pack._id);
-                }
-            } catch (err) {
-                Swal.fire(
-                    'Oops...',
-                    'Something went wrong!',
-                    'error'
-                );
-                console.error(err);
-            }
+    const handleSelectPack = (pack) => {
+        // If the user has already selected this pack, navigate directly to the pack details
+        if (selectedPack === pack._id) {
+            navigate(`/packs/${pack._id}`);
+        } else {
+            // Otherwise, open the confirmation modal
+            setPackToSelect(pack);
+            setOpenModal(true);
         }
+    };
+
+    const confirmSelection = async () => {
+        try {
+            const response = await axiosInstance.post(`/updatePack/${user.id}/${packToSelect._id}`);
+            if (response.status === 200) {
+                const updatedUser = { ...user, pack_id: packToSelect._id };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+
+                setSelectedPack(packToSelect._id);
+                setOpenModal(false);
+
+                // Navigate to the pack details after selection
+                navigate(`/packs/${packToSelect._id}`);
+            }
+        } catch (err) {
+            console.error('Error updating pack:', err);
+        }
+    };
+
+    const handleCloseModal = () => {
+        setOpenModal(false);
     };
 
     if (loading) {
@@ -102,16 +107,28 @@ export default function PackSelection() {
     }
 
     return (
-        <Box p={4} minHeight="100vh" display="flex" flexDirection="column" alignItems="center" justifyContent="center" bgcolor="background.default">
+<Box p={4} minHeight="100vh" display="flex" flexDirection="column" alignItems="center" justifyContent="center" bgcolor="background.default" sx={{ position: 'relative' }}>
+
             <Typography variant="h2" align="center" color="textPrimary" gutterBottom>
                 Choisissez un Pack
             </Typography>
+            <IconButton
+                onClick={() => navigate(-1)} // Navigate to the previous page
+                sx={{
+                    position: 'absolute',
+                    top: 16,
+                    left: 16,
+                    color: 'text.primary',
+                }}
+            >
+                <ArrowBackIcon fontSize="large" />
+            </IconButton>
 
             <Grid container spacing={3} justifyContent="center" maxWidth={1200}>
                 {packs.map((pack) => (
                     <Grid item xs={12} sm={6} md={4} key={pack._id}>
                         <StyledCard
-                            onClick={() => updatePack(pack)}
+                            onClick={() => handleSelectPack(pack)}
                             sx={{
                                 borderColor: selectedPack === pack._id ? 'primary.main' : 'divider',
                                 borderWidth: 2,
@@ -128,7 +145,6 @@ export default function PackSelection() {
                                 <Typography variant="h5" color="textPrimary" mb={2}>
                                     {pack.prix} DT
                                 </Typography>
-                                {/* Display an image if available */}
                                 {pack.image && (
                                     <Box
                                         component="img"
@@ -162,6 +178,40 @@ export default function PackSelection() {
                     </Grid>
                 ))}
             </Grid>
+
+            {/* Modal for confirmation */}
+            <Modal
+                open={openModal}
+                onClose={handleCloseModal}
+                aria-labelledby="modal-title"
+                aria-describedby="modal-description"
+            >
+                <Box sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 400,
+                    bgcolor: 'background.paper',
+                    boxShadow: 24,
+                    p: 4,
+                    borderRadius: 2,
+                    textAlign: 'center'
+                }}>
+                    <Typography id="modal-title" variant="h6" component="h2" gutterBottom>
+                        Confirmer la sélection
+                    </Typography>
+                    <Typography id="modal-description" sx={{ mb: 2 }}>
+                        Êtes-vous sûr de vouloir sélectionner le pack "{packToSelect?.title}" ?
+                    </Typography>
+                    <Button variant="contained" color="primary" onClick={confirmSelection}>
+                        Oui, sélectionnez-le
+                    </Button>
+                    <Button variant="outlined" color="secondary" onClick={handleCloseModal} sx={{ ml: 2 }}>
+                        Annuler
+                    </Button>
+                </Box>
+            </Modal>
         </Box>
     );
 }

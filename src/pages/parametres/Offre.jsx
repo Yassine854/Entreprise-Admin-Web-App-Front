@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../axiosInstance';
-import Swal from 'sweetalert2';
-import { Grid, Card, CardContent, Typography, CircularProgress, Box, IconButton } from '@mui/material';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'; // Material-UI icon
+import { Grid, Card, CardContent, Typography, CircularProgress, Box, IconButton, Modal, Button } from '@mui/material';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { styled } from '@mui/material/styles';
+import { useParams, useNavigate } from 'react-router-dom';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
 
 const StyledCard = styled(Card)(({ theme }) => ({
     position: 'relative',
@@ -27,21 +29,24 @@ export default function OffreSelection() {
     const [selectedOffre, setSelectedOffre] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [openModal, setOpenModal] = useState(false);
+    const [offreToSelect, setOffreToSelect] = useState(null); // Track the offer being selected
     const user = JSON.parse(localStorage.getItem('user'));
+    const { id } = useParams();
+    const navigate = useNavigate();
 
     useEffect(() => {
-        // Fetch offres from the Laravel API
         const fetchOffres = async () => {
             try {
-                const response = await axiosInstance.get('/offres');
+                const response = await axiosInstance.get(`/offres/${id}`);
                 if (Array.isArray(response.data)) {
                     setOffres(response.data);
-                    setSelectedOffre(user.offre_id); // Set the initial selected offre from local storage
+                    setSelectedOffre(user.offre_id); // Set initial selected offer from localStorage
                 } else {
                     throw new Error('Unexpected response format');
                 }
             } catch (err) {
-                setError('Failed to load offres');
+                setError('Failed to load offers');
                 console.error(err);
             } finally {
                 setLoading(false);
@@ -49,40 +54,39 @@ export default function OffreSelection() {
         };
 
         fetchOffres();
-    }, [user.offre_id]); // Depend on user.offre_id to refresh when it changes
+    }, [user.offre_id]);
 
-    const updateOffre = async (offre) => {
-        const result = await Swal.fire({
-            title: 'Êtes-vous sûr ?',
-            text: "Vous ne pourrez pas revenir en arrière !",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Oui, sélectionnez-le !',
-        });
-
-        if (result.isConfirmed) {
-            try {
-                // Assuming you have an endpoint to handle the selection/update
-                const response = await axiosInstance.post(`updateOffre/${user.id}/${offre._id}`);
-                if (response.status === 200) {
-                    // Update the local storage
-                    const updatedUser = { ...user, offre_id: offre._id };
-                    localStorage.setItem('user', JSON.stringify(updatedUser));
-
-                    // Update state to reflect the selection
-                    setSelectedOffre(offre._id);
-                }
-            } catch (err) {
-                Swal.fire(
-                    'Oops...',
-                    'Something went wrong!',
-                    'error'
-                );
-                console.error(err);
-            }
+    const handleSelectOffre = (offre) => {
+        if (selectedOffre === offre._id) {
+            // If offer is already selected, navigate directly
+            navigate(`/packs/${id}`);
+        } else {
+            // Open modal for confirmation
+            setOffreToSelect(offre);
+            setOpenModal(true);
         }
+    };
+
+    const confirmSelection = async () => {
+        try {
+            const response = await axiosInstance.post(`updateOffre/${user.id}/${offreToSelect._id}`);
+            if (response.status === 200) {
+                const updatedUser = { ...user, offre_id: offreToSelect._id };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+
+                setSelectedOffre(offreToSelect._id);
+                setOpenModal(false);
+
+                // Navigate to the offer details page after successful selection
+                navigate(`/packs/${offreToSelect._id}`);
+            }
+        } catch (err) {
+            console.error('Error updating offer:', err);
+        }
+    };
+
+    const handleCloseModal = () => {
+        setOpenModal(false);
     };
 
     if (loading) {
@@ -102,16 +106,26 @@ export default function OffreSelection() {
     }
 
     return (
-        <Box p={4} minHeight="100vh" display="flex" flexDirection="column" alignItems="center" justifyContent="center" bgcolor="background.default">
-            <Typography variant="h2" align="center" color="textPrimary" gutterBottom>
+<Box p={4} minHeight="100vh" display="flex" flexDirection="column" alignItems="center" justifyContent="center" bgcolor="background.default" sx={{ position: 'relative' }}>
+<Typography variant="h2" align="center" color="textPrimary" gutterBottom>
                 Choisissez un Offre
             </Typography>
-
+            <IconButton
+                onClick={() => navigate(-1)} // Navigate to the previous page
+                sx={{
+                    position: 'absolute',
+                    top: 16,
+                    left: 16,
+                    color: 'text.primary',
+                }}
+            >
+                <ArrowBackIcon fontSize="large" />
+            </IconButton>
             <Grid container spacing={3} justifyContent="center" maxWidth={1200}>
                 {offres.map((offre) => (
                     <Grid item xs={12} sm={6} md={4} key={offre._id}>
                         <StyledCard
-                            onClick={() => updateOffre(offre)}
+                            onClick={() => handleSelectOffre(offre)}
                             sx={{
                                 borderColor: selectedOffre === offre._id ? 'primary.main' : 'divider',
                                 borderWidth: 2,
@@ -128,7 +142,6 @@ export default function OffreSelection() {
                                 <Typography variant="h5" color="textPrimary" mb={2}>
                                     {offre.prix} DT
                                 </Typography>
-                                {/* Display an image if available */}
                                 {offre.image && (
                                     <Box
                                         component="img"
@@ -162,6 +175,40 @@ export default function OffreSelection() {
                     </Grid>
                 ))}
             </Grid>
+
+            {/* Modal for confirmation */}
+            <Modal
+                open={openModal}
+                onClose={handleCloseModal}
+                aria-labelledby="modal-title"
+                aria-describedby="modal-description"
+            >
+                <Box sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 400,
+                    bgcolor: 'background.paper',
+                    boxShadow: 24,
+                    p: 4,
+                    borderRadius: 2,
+                    textAlign: 'center'
+                }}>
+                    <Typography id="modal-title" variant="h6" component="h2" gutterBottom>
+                        Confirmer la sélection
+                    </Typography>
+                    <Typography id="modal-description" sx={{ mb: 2 }}>
+                        Êtes-vous sûr de vouloir sélectionner l'offre "{offreToSelect?.title}" ?
+                    </Typography>
+                    <Button variant="contained" color="primary" onClick={confirmSelection}>
+                        Oui, sélectionnez-le
+                    </Button>
+                    <Button variant="outlined" color="secondary" onClick={handleCloseModal} sx={{ ml: 2 }}>
+                        Annuler
+                    </Button>
+                </Box>
+            </Modal>
         </Box>
     );
 }

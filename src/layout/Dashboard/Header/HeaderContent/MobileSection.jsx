@@ -53,7 +53,7 @@ export default function MobileSection() {
   return (
     <>
     <Profile />
-      
+
     </>
   );
 }

@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import DataTable from 'react-data-table-component';
-import { Button, Grid, Typography, Container, Alert, TextField } from '@mui/material';
+import { Button,Stack, IconButton, Grid, Typography, Container, Alert, TextField } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import axiosInstance from '../../axiosInstance';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import ValueFormModal from './ValueModal'; // Import the modal component
 
 const Values = () => {
     const { id } = useParams(); // Get the attribute_id from URL
     const location = useLocation(); // Get the location object
+    const navigate = useNavigate(); // Use navigate for routing
     const attributeName = location.state?.attributeName || 'Attribut'; // Retrieve the attribute name or fallback
     const [values, setValues] = useState([]);
     const [filteredValues, setFilteredValues] = useState([]); // To store the filtered data
@@ -115,30 +117,43 @@ const Values = () => {
     ];
 
     return (
-        <Container maxWidth={false} disableGutters>
-            {alertMessage && (
-                <Alert severity={alertSeverity} style={{ marginBottom: '1rem' }}>
-                    {alertMessage}
-                </Alert>
-            )}
+        <Container sx={{ position: 'relative' }} maxWidth={false} disableGutters>
+            {/* Return Back Icon */}
+    <Stack spacing={6}>
+    <IconButton
+        onClick={() => navigate(-1)} // Navigate to the previous page
+        sx={{
+            position: 'absolute',
+            top: 5,
+            color: 'text.primary',
+        }}
+    >
+        <ArrowBackIcon fontSize="large" />
+    </IconButton>
 
-            <Grid item xs={12}>
-                <Typography variant="h5" gutterBottom>
-                    {`Attribut: ${attributeName}`}
-                </Typography>
-            </Grid>
-
+    <Grid >
+        <Grid item xs={12} container justifyContent="space-between" alignItems="center">
+            <Typography variant="h5" gutterBottom>
+                {`Attribut: ${attributeName}`}
+            </Typography>
             <Button
                 variant="contained"
                 color="primary"
-                sx={{ mb: 2 }}
                 onClick={() => handleOpenModal()}
                 startIcon={<AddIcon />}
             >
                 Ajouter Valeur
             </Button>
+        </Grid>
+    </Grid>
+</Stack>
 
-            {error && <p>{error}</p>}
+
+            {alertMessage && (
+                <Alert severity={alertSeverity} style={{ marginBottom: '1rem' }}>
+                    {alertMessage}
+                </Alert>
+            )}
 
             {/* Search Input */}
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
@@ -147,7 +162,7 @@ const Values = () => {
                     variant="outlined"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    sx={{ width: '300px' }} // Medium width for the search input
+                    sx={{ width: '300px', mr: 2 }} // Medium width and margin-right for spacing
                     InputProps={{
                         endAdornment: <SearchIcon />,
                     }}

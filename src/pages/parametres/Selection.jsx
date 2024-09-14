@@ -1,26 +1,31 @@
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
+import Container from '@mui/material/Container';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
-import { GiftOutlined, TagsOutlined, InfoCircleOutlined } from '@ant-design/icons'; // Importing Mantis icons
+import { GiftOutlined, InfoCircleOutlined,FileImageOutlined  } from '@ant-design/icons'; // Importing Mantis icons
 import { useNavigate } from 'react-router-dom';
 
 // ==============================|| DASHBOARD - SELECTION ||============================== //
 
 export default function Selection() {
     const navigate = useNavigate();
+    const user = JSON.parse(localStorage.getItem('user'));
 
     const handleSelection = (path) => {
         navigate(path); // Corrected navigation logic
     };
 
     return (
-        <Grid container spacing={4} justifyContent="center">
-            <Grid item xs={12}>
-                <Typography variant="h2" align="center" color="textPrimary" gutterBottom>
-                    Paramétrage du site
-                </Typography>
-                <Grid container spacing={4} justifyContent="center">
+        <Container maxWidth={false} disableGutters >
+            <CardContent>
+            <Grid container spacing={4} alignItems="center" justifyContent="center" direction="column">
+                <Grid item xs={12}>
+                    <Typography variant="h2" align="center" color="textPrimary" gutterBottom>
+                        Paramétrage du site
+                    </Typography>
+                </Grid>
+                <Grid  container item spacing={4} justifyContent="center">
                     <Grid item>
                         <Card
                             onClick={() => handleSelection('/packs')}
@@ -57,10 +62,9 @@ export default function Selection() {
                             </CardContent>
                         </Card>
                     </Grid>
-
                     <Grid item>
                         <Card
-                            onClick={() => handleSelection('/offres')}
+                            onClick={() => handleSelection(`/slides/${user.id}`)}
                             sx={{
                                 cursor: 'pointer',
                                 width: 300,
@@ -84,17 +88,16 @@ export default function Selection() {
                                     textAlign: 'center',
                                 }}
                             >
-                                <TagsOutlined style={{ fontSize: '80px', color: '#1890ff' }} />
+                                <FileImageOutlined style={{ fontSize: '80px', color: '#1890ff' }} />
                                 <Typography variant="h4" align="center" color="primary" mt={2}>
-                                    Offre
+                                    Slides
                                 </Typography>
                                 <Typography variant="body1" align="center" color="text.secondary" mt={2}>
-                                    Sélectionner parmi les différentes offres proposées.
+                                    Gérer votre slides.
                                 </Typography>
                             </CardContent>
                         </Card>
                     </Grid>
-
                     <Grid item>
                         <Card
                             onClick={() => handleSelection('/parametres')}
@@ -133,6 +136,7 @@ export default function Selection() {
                     </Grid>
                 </Grid>
             </Grid>
-        </Grid>
+            </CardContent>
+        </Container>
     );
 }

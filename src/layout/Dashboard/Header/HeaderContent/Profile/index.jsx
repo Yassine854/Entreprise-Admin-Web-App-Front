@@ -89,14 +89,22 @@ export default function Profile() {
         const response = await axios.get('https://example.shop/api/user', {
           withCredentials: true,
         });
-        console.log(response.data);
-        if (!response.data) {
+        const fetchedUser = response.data;
+
+        // If the user exists and is not blocked, update localStorage
+        if (fetchedUser && !fetchedUser.data.blocked) {
+          const currentUser = JSON.parse(localStorage.getItem('user'));
+
+          // Only update if the user data is different
+          if (JSON.stringify(currentUser) !== JSON.stringify(fetchedUser.data)) {
+            localStorage.setItem('user', JSON.stringify(fetchedUser.data));
+          }
+        } else {
           localStorage.removeItem('user');
           window.location.href = '/login';
         }
       } catch (error) {
         console.log(error);
-        // If there's an error, such as 404 or 401, assume the user doesn't exist
         localStorage.removeItem('user');
         window.location.href = '/login';
       }
@@ -104,6 +112,7 @@ export default function Profile() {
 
     checkUser();
   }, []);
+
 
   const iconBackColorOpen = 'grey.100';
 

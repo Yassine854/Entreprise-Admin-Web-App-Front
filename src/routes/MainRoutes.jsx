@@ -18,6 +18,8 @@ const Selection = Loadable(lazy(() => import('pages/parametres/Selection')));
 const Pack = Loadable(lazy(() => import('pages/parametres/Pack')));
 const Offre = Loadable(lazy(() => import('pages/parametres/Offre')));
 const Parametre = Loadable(lazy(() => import('pages/parametres/Parametre')));
+const Slide = Loadable(lazy(() => import('pages/parametres/Slide')));
+
 
 //Profile
 const UpdateProfile = Loadable(lazy(() => import('pages/profile/update')));
@@ -68,12 +70,26 @@ const MainRoutes = {
       element: <Selection/>
     },
     {
-        path: 'packs',
-        element: <Pack/>
+        path: 'slides',
+        children: [
+            {
+              path: ':id',
+              element: <Slide />
+            },
+        ]
       },
-      {
-        path: 'offres',
-        element: <Offre/>
+    {
+        path: 'packs',
+        children: [
+            {
+              path: '',
+              element: <Pack />
+            },
+            {
+              path: ':id',
+              element: <Offre />
+            },
+        ]
       },
       {
         path: 'parametres',

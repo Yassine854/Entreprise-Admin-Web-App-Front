@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import DataTable from 'react-data-table-component';
-import { Button, Container, Alert, TextField, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { Button,Stack, IconButton,Container, Alert, TextField, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useParams } from 'react-router-dom';
 import { EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
@@ -8,7 +8,10 @@ import axiosInstance from '../../axiosInstance';
 import ProductFormModal from './modal';
 import ProductDetailModal from './show';
 import { Typography, Grid } from '@mui/material';
-import { useLocation } from 'react-router-dom';
+import { useLocation,useNavigate } from 'react-router-dom';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import AddIcon from '@mui/icons-material/Add';
+
 
 const ProductList = () => {
     const [products, setProducts] = useState([]);
@@ -27,6 +30,8 @@ const ProductList = () => {
     const location = useLocation();
     const categoryName = location.state?.categoryName || 'Catégorie';
     const user = JSON.parse(localStorage.getItem('user'));
+    const navigate = useNavigate(); // Use navigate for routing
+
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -171,26 +176,47 @@ const ProductList = () => {
     ];
 
     return (
-        <Container maxWidth={false} disableGutters>
+        <Container sx={{ position: 'relative' }} maxWidth={false} disableGutters>
+
+
+<Stack spacing={6}>
+    <IconButton
+        onClick={() => navigate(-1)} // Navigate to the previous page
+        sx={{
+            position: 'absolute',
+            top: 5,
+            color: 'text.primary',
+        }}
+    >
+        <ArrowBackIcon fontSize="large" />
+    </IconButton>
+
+
+    <Grid >
+        <Grid item xs={12} container justifyContent="space-between" alignItems="center">
+        <Typography variant="h5" gutterBottom>
+            {`Catégorie: ${categoryName}`}
+        </Typography>
+            <Button
+                variant="contained"
+                color="primary"
+                onClick={() => openModalForCreate()}
+                startIcon={<AddIcon />}
+            >
+                Ajouter produit
+            </Button>
+        </Grid>
+    </Grid>
+
+    </Stack>
             {alertMessage && (
                 <Alert severity={alertSeverity} style={{ marginBottom: '1rem' }}>
                     {alertMessage}
                 </Alert>
             )}
-            <Grid item xs={12}>
-    <Typography variant="h5" gutterBottom>
-    {`Catégorie: ${categoryName}`}
-</Typography>
-</Grid>
-            <Button
-                variant="contained"
-                color="primary"
-                sx={{ mb: 2 }}
-                onClick={openModalForCreate}
-                startIcon={<PlusOutlined />}
-            >
-                Ajouter
-            </Button>
+
+
+
             {error && <p>{error}</p>}
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
                 <FormControl sx={{ minWidth: 120, marginRight: 2 }}>

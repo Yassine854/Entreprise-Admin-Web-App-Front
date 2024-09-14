@@ -64,12 +64,12 @@ export default function AuthLogin({ isDemo = false }) {
         password: values.password
       });
 
-      if (response.status === 200) {
+      if (response.status === 200 ) {
         // Store user data in local storage
         localStorage.setItem('user', JSON.stringify(response.data.user));
         // Redirect or handle successful login here
         console.log('Login successful:', response.data);
-        navigate('/'); // Use navigate to redirect
+        navigate('/dashboard');
       }
     } catch (err) {
       if (err.response && err.response.status === 401) {
