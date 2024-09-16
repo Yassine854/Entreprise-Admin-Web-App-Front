@@ -76,7 +76,6 @@ const SliderAdmin = () => {
         { name: 'Titre', selector: row => row.title, sortable: true },
         { name: 'Description', selector: row => row.description, sortable: true },
         { name: 'Image', selector: row => <img src={`https://example.shop/storage/img/sliders/${row.image}`} alt={row.title} style={{ width: '100px', height: 'auto' }} />, sortable: false },
-
         {
             name: 'Actions',
             cell: row => (

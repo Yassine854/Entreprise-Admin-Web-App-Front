@@ -102,7 +102,7 @@ const ProductList = () => {
 
     const handleSave = async () => {
         try {
-            const response = await axiosInstance.get(`/products/categories/${categoryId}`);
+            const response = await axiosInstance.get(`products/${user.id}/${categoryId}`);
             setProducts(response.data);
             setFilteredProducts(response.data);
             if (selectedProduct) {
