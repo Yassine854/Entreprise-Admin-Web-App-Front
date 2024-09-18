@@ -235,43 +235,43 @@ const ProductFormModal = ({ open, handleClose, product, onSave, categoryId: defa
                             {selectedAttributes.map((attr, index) => (
                                 <Grid container spacing={2} key={index} sx={{ mb: 2, alignItems: 'center' }}>
                                     <Grid item xs={12} sm={3}>
-    <TextField
-        select
-        fullWidth
-        label="Attribut"
-        value={attr.attribute_id}
-        onChange={(e) => handleAttributeChange(index, 'attribute_id', e.target.value)}
-        error={!!fieldErrors[`attributes.${index}.attribute_id`]}
-        helperText={fieldErrors[`attributes.${index}.attribute_id`] || ''}
-    >
-        {attributes.map((attribute) => (
-            <MenuItem key={attribute._id} value={attribute._id}>
-                {attribute.name}
-            </MenuItem>
-        ))}
-    </TextField>
-</Grid>
-<Grid item xs={12} sm={3}>
-    <TextField
-        select
-        fullWidth
-        label="Valeur"
-        value={attr.value_id}
-        onChange={(e) => handleAttributeChange(index, 'value_id', e.target.value)}
-        error={!!fieldErrors[`attributes.${index}.value_id`]}
-        helperText={fieldErrors[`attributes.${index}.value_id`] || ''}
-    >
-        {/* Ensure MenuItem is rendered even if no value_id is set */}
-        {attr.attribute_id
-            ? attributes.find(a => a._id === attr.attribute_id)?.values.map((val) => (
-                <MenuItem key={val._id} value={val._id}>
-                    {val.name}
-                </MenuItem>
-            ))
-            : <MenuItem value="">Aucun attribut sélectionné</MenuItem>
-        }
-    </TextField>
-</Grid>
+                                        <TextField
+                                            select
+                                            fullWidth
+                                            label="Attribut"
+                                            value={attr.attribute_id}
+                                            onChange={(e) => handleAttributeChange(index, 'attribute_id', e.target.value)}
+                                            error={!!fieldErrors[`attributes.${index}.attribute_id`]}
+                                            helperText={fieldErrors[`attributes.${index}.attribute_id`] || ''}
+                                        >
+                                            {attributes.map((attribute) => (
+                                                <MenuItem key={attribute._id} value={attribute._id}>
+                                                    {attribute.name}
+                                                </MenuItem>
+                                            ))}
+                                        </TextField>
+                                    </Grid>
+                                    <Grid item xs={12} sm={3}>
+                                        <TextField
+                                            select
+                                            fullWidth
+                                            label="Valeur"
+                                            value={attr.value_id}
+                                            onChange={(e) => handleAttributeChange(index, 'value_id', e.target.value)}
+                                            error={!!fieldErrors[`attributes.${index}.value_id`]}
+                                            helperText={fieldErrors[`attributes.${index}.value_id`] || ''}
+                                        >
+                                            {/* Ensure MenuItem is rendered even if no value_id is set */}
+                                            {attr.attribute_id
+                                                ? attributes.find(a => a._id === attr.attribute_id)?.values.map((val) => (
+                                                    <MenuItem key={val._id} value={val._id}>
+                                                        {val.name}
+                                                    </MenuItem>
+                                                ))
+                                                : <MenuItem value="">Aucun attribut sélectionné</MenuItem>
+                                            }
+                                        </TextField>
+                                    </Grid>
 
                                     <Grid item xs={12} sm={2}>
                                         <TextField
