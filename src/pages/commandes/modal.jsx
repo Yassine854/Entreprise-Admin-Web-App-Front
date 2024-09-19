@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Modal, Box, Button, TextField, Autocomplete, Typography, Grid, Divider, IconButton, Card, CardContent, CardMedia, Select, MenuItem, InputLabel, FormControl
+    Modal, FormHelperText, Box, Button, TextField, Autocomplete, Typography, Grid, Divider, IconButton, Card, CardContent, CardMedia, Select, MenuItem, InputLabel, FormControl
 } from '@mui/material';
 import axiosInstance from '../../axiosInstance';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -47,8 +47,6 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
         }
     };
 
-
-
     const fetchProducts = async () => {
         try {
             const response = await axiosInstance.get(`/products/${user.id}`);
@@ -63,7 +61,6 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
             const response = await axiosInstance.get(`/ProductAttributes/${productId}`);
             const attributesData = response.data;
 
-            // Transform attributes data into a more usable format
             const formattedAttributes = {};
             attributesData.forEach(attr => {
                 if (!formattedAttributes[attr.attribute_id]) {
@@ -91,16 +88,46 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
         try {
             const response = await axiosInstance.get(`/ShowCommande/${id}`);
             const orderData = response.data;
-            setSelectedClient(clients.find(client => client._id === orderData.user_id) || null);
-            setSelectedProducts(orderData.products.map(p => ({
-                ...p.product,
-                attributes: p.attributes || {}
-            })));
+            console.log(orderData);
+
+            // Set the selected client based on orderData.client_id
+            setSelectedClient(clients.find(client => client._id === orderData.client_id) || null);
+
+            // Create a Map to ensure unique products
+            const uniqueProductsMap = new Map();
+
+            await Promise.all(orderData.products.map(async (p) => {
+                await fetchProductAttributes(p.product._id);
+
+                // Use the product ID as the key
+                if (!uniqueProductsMap.has(p.product._id)) {
+                    uniqueProductsMap.set(p.product._id, {
+                        ...p.product,
+                        quantity: p.quantity || 1,
+                        attributes: p.product.attributes.reduce((acc, attr) => {
+                            acc[attr.attribute_id] = attr.value_id;
+                            return acc;
+                        }, {}) || {}
+                    });
+                } else {
+                    // If it already exists, combine quantities if needed
+                    const existingProduct = uniqueProductsMap.get(p.product._id);
+                    existingProduct.quantity += (p.quantity || 1); // Combine quantities
+                }
+            }));
+
+            // Convert the Map back to an array and set the state
+            const selectedProducts = Array.from(uniqueProductsMap.values());
+            console.log(selectedProducts);
+
+            setSelectedProducts(selectedProducts);
             setTotalAmount(orderData.total_amount);
         } catch (error) {
             console.error('Failed to fetch order:', error);
         }
     };
+
+
 
     const handleProductChange = async (event, newValue) => {
         const newProducts = newValue.map(product => ({
@@ -109,7 +136,6 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
         }));
         setSelectedProducts(newProducts);
 
-        // Fetch attributes for newly selected products
         for (const product of newValue) {
             await fetchProductAttributes(product._id);
         }
@@ -122,20 +148,14 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
                     ...p,
                     attributes: {
                         ...p.attributes,
-                        [attributeId]: {
-                            ...p.attributes[attributeId],
-                            value_id: valueId
-                        }
+                        [attributeId]: valueId
                     }
                 } : p
             )
         );
     };
 
-
-
     const handleStockChange = (productId, quantity) => {
-        console.log('Updating quantity:', productId, quantity);
         setSelectedProducts(prevProducts =>
             prevProducts.map(p =>
                 p._id === productId ? {
@@ -150,9 +170,6 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
             return newErrors;
         });
     };
-
-
-
 
     const handleRemoveProduct = (productId) => {
         setSelectedProducts(prevProducts =>
@@ -172,13 +189,12 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
 
     const calculateTotalAmount = (products) => {
         const total = products.reduce((sum, product) => {
-            const quantity = product.quantity || 1; // Default quantity to 1 if not set
+            const quantity = product.quantity || 1;
             const price = parseFloat(product.price) || 0;
             return sum + (price * quantity);
         }, 0);
         setTotalAmount(total);
     };
-
 
     const resetForm = () => {
         setSelectedClient(null);
@@ -195,19 +211,16 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
                 admin_id: user.id,
                 client_id: selectedClient?._id,
                 products: selectedProducts.map(product => {
-                    const attributesArray = Object.keys(product.attributes).map(attrId => {
-                        const attribute = product.attributes[attrId];
-                        return {
-                            attribute_id: attrId,
-                            value_id: attribute.value_id // Assuming value_id is stored in attributes
-                        };
-                    });
+                    const attributesArray = Object.keys(product.attributes).map(attrId => ({
+                        attribute_id: attrId,
+                        value_id: product.attributes[attrId]
+                    }));
 
                     return {
                         _id: product._id,
                         attributes: [
                             {
-                                quantity: product.quantity || 1, // Manage quantity separately
+                                quantity: product.quantity || 1,
                                 attributes: attributesArray
                             }
                         ]
@@ -219,7 +232,6 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
             if (isEditing) {
                 await axiosInstance.put(`/commandes/${order._id}`, orderData);
             } else {
-                console.log(orderData);
                 await axiosInstance.post('/commandes', orderData);
             }
 
@@ -234,8 +246,6 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
             }
         }
     };
-
-
 
     return (
         <Modal open={open} onClose={handleClose} aria-labelledby="order-form-modal">
@@ -306,22 +316,12 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
                                 <Grid container spacing={3} key={product._id} alignItems="center">
                                     <Grid item xs={12}>
                                         <Card sx={{ display: 'flex', mb: 3, alignItems: 'flex-start', p: 2 }}>
-                                            {product.image && (
-                                                <CardMedia
-                                                    component="img"
-                                                    sx={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 1, mr: 2, ml: 2 }}
-                                                    image={`https://example.shop/storage/img/products/${product.image}`}
-                                                    alt={product.name}
-                                                />
-                                            )}
-                                            {!product.image && (
-                                                <CardMedia
-                                                    component="img"
-                                                    sx={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 1, mr: 2, ml: 2 }}
-                                                    image={`https://example.shop/storage/img/NoImage.png`}
-                                                    alt={product.name}
-                                                />
-                                            )}
+                                            <CardMedia
+                                                component="img"
+                                                sx={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 1, mr: 2, ml: 2 }}
+                                                image={product.image ? `https://example.shop/storage/img/products/${product.image}` : `https://example.shop/storage/img/NoImage.png`}
+                                                alt={product.name}
+                                            />
                                             <Box sx={{ flex: 1 }}>
                                                 <CardContent>
                                                     <Typography variant="h6">{product.name}</Typography>
@@ -333,43 +333,43 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
                                                     </Typography>
 
                                                     {productAttributes[product._id] && (
-    <Box sx={{ mt: 2 }}>
-        {Object.keys(productAttributes[product._id]).map(attrId => (
-            <FormControl key={attrId} fullWidth sx={{ mb: 2 }}>
-                <InputLabel>{productAttributes[product._id][attrId].name}</InputLabel>
-                <Select
-                    value={product.attributes?.[attrId]?.value_id || ''}
-                    onChange={(e) => handleAttributeChange(product._id, attrId, e.target.value)}
-                    label={productAttributes[product._id][attrId].name}
-                >
-                    {productAttributes[product._id][attrId].values.map(value => (
-                        <MenuItem key={value._id} value={value._id}>
-                            {value.name}
-                        </MenuItem>
-                    ))}
-                </Select>
-            </FormControl>
-        ))}
-    </Box>
-)}
+                                                        <Box sx={{ mt: 2 }}>
+                                                            {Object.keys(productAttributes[product._id]).map(attrId => (
+                                                                <FormControl key={attrId} fullWidth sx={{ mb: 2 }}>
+                                                                    <InputLabel>{productAttributes[product._id][attrId].name}</InputLabel>
+                                                                    <Select
+                                                                        value={product.attributes[attrId] || ''}
+                                                                        onChange={(e) => handleAttributeChange(product._id, attrId, e.target.value)}
+                                                                        label={productAttributes[product._id][attrId].name}
+                                                                        error={!!errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.${attrId}.value_id`]}
+                                                                    >
+                                                                        {productAttributes[product._id][attrId].values.map(value => (
+                                                                            <MenuItem key={value._id} value={value._id}>
+                                                                                {value.name}
+                                                                            </MenuItem>
+                                                                        ))}
+                                                                    </Select>
+                                                                    <FormHelperText>
+                                                                        {errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.${attrId}.value_id`]?.[0] || ''}
+                                                                    </FormHelperText>
+                                                                </FormControl>
+                                                            ))}
 
-<TextField
-    label="Quantité"
-    type="number"
-    inputProps={{
-        min: 1,
-        max: product.stock
-    }}
-    value={product.quantity || 1}
-    onChange={(e) => handleStockChange(product._id, e.target.value)}
-    variant="outlined"
-    fullWidth
-    sx={{ mt: 1 }}
-    error={!!errors[`product_${product._id}`]}
-    helperText={errors[`product_${product._id}`] || ''}
-/>
-
-
+                                                            <TextField
+                                                                label="Quantité"
+                                                                type="number"
+                                                                inputProps={{
+                                                                    min: 1,
+                                                                    max: product.stock
+                                                                }}
+                                                                value={product.quantity || 1}
+                                                                onChange={(e) => handleStockChange(product._id, e.target.value)}
+                                                                variant="outlined"
+                                                                fullWidth
+                                                                sx={{ mt: 1 }}
+                                                            />
+                                                        </Box>
+                                                    )}
                                                 </CardContent>
                                             </Box>
                                             <Box sx={{ display: 'flex', alignItems: 'center', p: 1 }}>
