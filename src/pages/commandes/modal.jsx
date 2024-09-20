@@ -99,21 +99,18 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
             await Promise.all(orderData.products.map(async (p) => {
                 await fetchProductAttributes(p.product._id);
 
-                // Use the product ID as the key
+                // Check if the product has already been added
                 if (!uniqueProductsMap.has(p.product._id)) {
                     uniqueProductsMap.set(p.product._id, {
                         ...p.product,
-                        quantity: p.quantity || 1,
+                        quantity: p.quantity, // Set quantity from the first occurrence
                         attributes: p.product.attributes.reduce((acc, attr) => {
                             acc[attr.attribute_id] = attr.value_id;
                             return acc;
                         }, {}) || {}
                     });
-                } else {
-                    // If it already exists, combine quantities if needed
-                    const existingProduct = uniqueProductsMap.get(p.product._id);
-                    existingProduct.quantity += (p.quantity || 1); // Combine quantities
                 }
+                // If the product is already in the map, do nothing (ensures uniqueness)
             }));
 
             // Convert the Map back to an array and set the state
@@ -126,6 +123,9 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
             console.error('Failed to fetch order:', error);
         }
     };
+
+
+
 
 
 
@@ -148,19 +148,20 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
                     ...p,
                     attributes: {
                         ...p.attributes,
-                        [attributeId]: valueId
+                        [attributeId]: valueId || null // Set to null if no value is selected
                     }
                 } : p
             )
         );
     };
 
+
     const handleStockChange = (productId, quantity) => {
         setSelectedProducts(prevProducts =>
             prevProducts.map(p =>
                 p._id === productId ? {
                     ...p,
-                    quantity: Math.max(1, Math.min(parseInt(quantity, 10), p.stock))
+                    quantity: Math.max(1, Math.min(parseInt(quantity, 10)))
                 } : p
             )
         );
@@ -213,7 +214,7 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
                 products: selectedProducts.map(product => {
                     const attributesArray = Object.keys(product.attributes).map(attrId => ({
                         attribute_id: attrId,
-                        value_id: product.attributes[attrId]
+                        value_id: product.attributes[attrId] || null // Include null if no value selected
                     }));
 
                     return {
@@ -240,12 +241,18 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
         } catch (error) {
             console.error('Failed to save order:', error);
             if (error.response && error.response.data && error.response.data.errors) {
-                setErrors(error.response.data.errors);
+                setErrors(prevErrors => ({
+                    ...prevErrors,
+                    ...error.response.data.errors // Merge in the errors directly
+                }));
+
             } else {
                 setErrors({ general: 'Une erreur s\'est produite lors de l\'enregistrement.' });
             }
         }
     };
+
+
 
     return (
         <Modal open={open} onClose={handleClose} aria-labelledby="order-form-modal">
@@ -255,12 +262,12 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
                     top: '50%',
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    width: '95%',
-                    maxWidth: 1200,
+                    width: '100%', // Increase width
+                    maxWidth: 'none', // Remove maxWidth
                     bgcolor: 'background.paper',
                     borderRadius: 2,
                     boxShadow: 24,
-                    height: '90vh',
+                    height: '95vh', // Increase height
                     overflow: 'hidden',
                 }}
             >
@@ -338,21 +345,29 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
                                                                 <FormControl key={attrId} fullWidth sx={{ mb: 2 }}>
                                                                     <InputLabel>{productAttributes[product._id][attrId].name}</InputLabel>
                                                                     <Select
-                                                                        value={product.attributes[attrId] || ''}
-                                                                        onChange={(e) => handleAttributeChange(product._id, attrId, e.target.value)}
-                                                                        label={productAttributes[product._id][attrId].name}
-                                                                        error={!!errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.${attrId}.value_id`]}
-                                                                    >
-                                                                        {productAttributes[product._id][attrId].values.map(value => (
-                                                                            <MenuItem key={value._id} value={value._id}>
-                                                                                {value.name}
-                                                                            </MenuItem>
-                                                                        ))}
-                                                                    </Select>
-                                                                    <FormHelperText>
-                                                                        {errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.${attrId}.value_id`]?.[0] || ''}
-                                                                    </FormHelperText>
-                                                                </FormControl>
+    value={product.attributes[attrId] || ''}
+    onChange={(e) => handleAttributeChange(product._id, attrId, e.target.value)}
+    label={productAttributes[product._id][attrId].name}
+    error={!!errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.${attrId}.value_id`]}
+>
+    {productAttributes[product._id][attrId].values.map(value => (
+        <MenuItem key={value._id} value={value._id}>
+            {value.name}
+        </MenuItem>
+    ))}
+</Select>
+<FormHelperText error={!!errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.0.attributes`]}>
+    {errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.0.attributes`]?.[0] || ''}
+</FormHelperText>
+
+
+<FormHelperText
+    error={!!errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.${Object.keys(productAttributes[product._id]).indexOf(attrId)}.quantity`]}
+>
+
+    {errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.${Object.keys(productAttributes[product._id]).indexOf(attrId)}.quantity`]?.[0] || ''}
+</FormHelperText>
+                      </FormControl>
                                                             ))}
 
                                                             <TextField
@@ -360,13 +375,14 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
                                                                 type="number"
                                                                 inputProps={{
                                                                     min: 1,
-                                                                    max: product.stock
                                                                 }}
                                                                 value={product.quantity || 1}
                                                                 onChange={(e) => handleStockChange(product._id, e.target.value)}
                                                                 variant="outlined"
                                                                 fullWidth
                                                                 sx={{ mt: 1 }}
+
+
                                                             />
                                                         </Box>
                                                     )}
@@ -384,27 +400,50 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
                                     </Grid>
                                 </Grid>
                             ))}
-                            <Grid item xs={12}>
-                                <Typography variant="h6">Total: {totalAmount.toFixed(2)} DT</Typography>
-                            </Grid>
+
                         </Grid>
+                        {errors && (
+    <Box sx={{ mb: 2 }}>
+        {typeof errors === 'string' ? (
+            <Typography variant="body2" color="error">
+                {errors}
+            </Typography>
+        ) : (
+            Object.values(errors).map((error, index) => (
+                <Typography key={index} variant="body2" color="error" sx={{ mb: 1 }}>
+                    {error}
+                    <br />
+                </Typography>
+            ))
+        )}
+    </Box>
+)}
+
+
+
+
                     </Box>
-                    <Box sx={{ p: 2, borderTop: '1px solid #ccc', display: 'flex', justifyContent: 'flex-end' }}>
-                        <Button
-                            onClick={handleSave}
-                            variant="contained"
-                            color="primary"
-                            sx={{ mr: 2 }}
-                        >
-                            {isEditing ? 'Sauvegarder' : 'Ajouter'}
-                        </Button>
-                        <Button
-                            onClick={handleClose}
-                            variant="outlined"
-                        >
-                            Annuler
-                        </Button>
-                    </Box>
+                    <Box sx={{ p: 2, borderTop: '1px solid #ccc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Typography variant="h6">Total: {totalAmount.toFixed(2)} DT</Typography>
+
+    <Box>
+        <Button
+            onClick={handleSave}
+            variant="contained"
+            color="primary"
+            sx={{ mr: 2 }}
+        >
+            {isEditing ? 'Sauvegarder' : 'Ajouter'}
+        </Button>
+        <Button
+            onClick={handleClose}
+            variant="outlined"
+        >
+            Annuler
+        </Button>
+    </Box>
+</Box>
+
                 </Box>
             </Box>
         </Modal>
