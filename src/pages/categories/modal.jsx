@@ -6,6 +6,7 @@ const CategoryFormModal = ({ open, handleClose, category, onSave }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [error, setError] = useState('');
+    const [errors, setErrors] = useState({}); // État pour les erreurs
     const user = JSON.parse(localStorage.getItem('user'));
     const [parametre, setParametre] = useState([]);
 
@@ -20,7 +21,7 @@ const CategoryFormModal = ({ open, handleClose, category, onSave }) => {
                 console.log(error);
             }
         }
-};
+    };
 
     useEffect(() => {
         fetchParametre();
@@ -32,6 +33,10 @@ const CategoryFormModal = ({ open, handleClose, category, onSave }) => {
             setName('');
             setDescription('');
         }
+
+        // Réinitialiser les erreurs lorsque le modal s'ouvre
+        setErrors({});
+        setError('');
     }, [category, open]);
 
     const handleSubmit = async (event) => {
@@ -44,11 +49,15 @@ const CategoryFormModal = ({ open, handleClose, category, onSave }) => {
             } else {
                 await axiosInstance.post(`/categories/${parametre.nature_id}`, payload);
             }
-            onSave(); // Refresh the category list
-            handleClose(); // Close the modal
+            onSave(); // Rafraîchir la liste des catégories
+            handleClose(); // Fermer le modal
         } catch (error) {
             console.error('Error saving category:', error);
-            setError('Erreur lors de l\'enregistrement de la catégorie.'); // Set error message
+            if (error.response && error.response.data) {
+                setErrors(error.response.data); // Mettre à jour l'état des erreurs
+            } else {
+                setError('Erreur lors de l\'enregistrement de la catégorie.'); // Set error message
+            }
         }
     };
 
@@ -86,6 +95,8 @@ const CategoryFormModal = ({ open, handleClose, category, onSave }) => {
                         variant="outlined"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        error={!!errors.name}
+                        helperText={errors.name ? errors.name.join(', ') : ''} // Afficher les messages d'erreur
                         required
                     />
                     <TextField
@@ -95,6 +106,8 @@ const CategoryFormModal = ({ open, handleClose, category, onSave }) => {
                         variant="outlined"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
+                        error={!!errors.description} // Vérifiez si une erreur existe pour ce champ
+                        helperText={errors.description ? errors.description.join(', ') : ''} // Afficher les messages d'erreur
                     />
                     <Box mt={2} display="flex" justifyContent="space-between">
                         <Button type="submit" variant="contained" color="primary">

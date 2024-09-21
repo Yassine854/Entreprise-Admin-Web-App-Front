@@ -5,11 +5,15 @@ import axiosInstance from '../../axiosInstance';
 const AttributFormModal = ({ open, handleClose, attribute, onSave }) => {
     const [name, setName] = useState('');
     const [error, setError] = useState('');
+    const [errors, setErrors] = useState({}); // État pour les erreurs de validation
 
     useEffect(() => {
         if (open && attribute) {
-            setName(attribute.name); // Populate with existing attribute name
+            setName(attribute.name); // Remplir avec le nom de l'attribut existant
         }
+        // Réinitialiser les erreurs lorsque le modal s'ouvre
+        setErrors({});
+        setError('');
     }, [attribute, open]);
 
     const handleSubmit = async (event) => {
@@ -18,25 +22,30 @@ const AttributFormModal = ({ open, handleClose, attribute, onSave }) => {
 
         try {
             if (attribute) {
-                // Update an existing attribute
+                // Mettre à jour un attribut existant
                 await axiosInstance.put(`/attributes/${attribute._id}`, payload);
             } else {
-                // Create a new attribute
+                // Créer un nouvel attribut
                 await axiosInstance.post(`/attributes`, payload);
             }
-            onSave(); // Refresh the attribute list
-            handleClose(); // Close the modal
-            setError(''); // Clear any previous error
+            onSave(); // Rafraîchir la liste des attributs
+            handleClose(); // Fermer le modal
+            setError(''); // Effacer toute erreur précédente
         } catch (error) {
             console.error('Error saving attribute:', error);
-            setError("Erreur lors de l'enregistrement de l'attribut."); // Set error message
+            if (error.response && error.response.data.errors) {
+                setErrors(error.response.data.errors); // Mettre à jour l'état des erreurs
+            } else {
+                setError("Erreur lors de l'enregistrement de l'attribut."); // Message d'erreur générique
+            }
         }
     };
 
     const handleModalClose = () => {
         handleClose();
-        setName(''); // Clear form data on close
-        setError(''); // Clear any error on close
+        setName(''); // Effacer les données du formulaire à la fermeture
+        setError(''); // Effacer toute erreur à la fermeture
+        setErrors({}); // Réinitialiser les erreurs
     };
 
     return (
@@ -59,7 +68,7 @@ const AttributFormModal = ({ open, handleClose, attribute, onSave }) => {
                     p: 4,
                 }}
             >
-                <h2 id="modal-title">{attribute ? 'Modifier l\'attribut' : 'Ajouter un attribute'}</h2>
+                <h2 id="modal-title">{attribute ? 'Modifier l\'attribut' : 'Ajouter un attribut'}</h2>
                 {error && <Alert severity="error" style={{ marginBottom: '1rem' }}>{error}</Alert>}
 
                 <form onSubmit={handleSubmit}>
@@ -70,6 +79,8 @@ const AttributFormModal = ({ open, handleClose, attribute, onSave }) => {
                         variant="outlined"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        error={!!errors.name} // Vérifiez s'il y a une erreur pour ce champ
+                        helperText={errors.name ? errors.name.join(', ') : ''} // Affichez les messages d'erreur
                         required
                     />
 

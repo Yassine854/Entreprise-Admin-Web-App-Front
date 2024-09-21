@@ -5,11 +5,15 @@ import axiosInstance from '../../axiosInstance';
 const ValueFormModal = ({ open, handleClose, value, onSave, attributeId, setAlertMessage, setAlertSeverity }) => {
     const [name, setName] = useState('');
     const [error, setError] = useState('');
+    const [errors, setErrors] = useState({}); // État pour les erreurs de validation
 
     useEffect(() => {
         if (open && value) {
-            setName(value.name); // Populate with existing value name
+            setName(value.name); // Remplir avec le nom de la valeur existante
         }
+        // Réinitialiser les erreurs lorsque le modal s'ouvre
+        setErrors({});
+        setError('');
     }, [value, open]);
 
     const handleSubmit = async (event) => {
@@ -18,36 +22,41 @@ const ValueFormModal = ({ open, handleClose, value, onSave, attributeId, setAler
 
         try {
             if (value) {
-                // Update an existing value
+                // Mettre à jour une valeur existante
                 await axiosInstance.put(`/values/${value._id}`, payload);
                 setAlertMessage('Valeur modifiée avec succès.');
-                setAlertSeverity('success');
-                setName('');
+                setTimeout(() => {
+                    setAlertMessage('');
+                    setModalOpen(false);
+                }, 3000);
             } else {
-                // Create a new value under the specific attribute
+                // Créer une nouvelle valeur sous l'attribut spécifique
                 await axiosInstance.post(`/values/${attributeId}`, payload);
                 setAlertMessage('Valeur ajoutée avec succès.');
-                setAlertSeverity('success');
-                setName('');
+                setTimeout(() => {
+                    setAlertMessage('');
+                    setModalOpen(false);
+                }, 3000);
             }
-            onSave(); // Refresh the value list
-            handleClose(); // Close the modal
-            setError(''); // Clear any previous error
+            setAlertSeverity('success');
+            onSave(); // Rafraîchir la liste des valeurs
+            handleClose(); // Fermer le modal
+            setName(''); // Effacer le champ de saisie
         } catch (error) {
             console.error('Error saving value:', error);
-            setAlertMessage("Erreur lors de l'enregistrement de la valeur."); // Set error message
-            setAlertSeverity('error');
-        } finally {
-            setTimeout(() => {
-                setAlertMessage('');
-            }, 3000);
+            if (error.response && error.response.data.errors) {
+                setErrors(error.response.data.errors); // Mettre à jour l'état des erreurs
+            } else {
+                setError("Erreur lors de l'enregistrement de la valeur."); // Message d'erreur générique
+            }
         }
     };
 
     const handleModalClose = () => {
         handleClose();
-        setName(''); // Clear form data on close
-        setError(''); // Clear any error on close
+        setName(''); // Effacer les données du formulaire à la fermeture
+        setError(''); // Effacer toute erreur à la fermeture
+        setErrors({}); // Réinitialiser les erreurs
     };
 
     return (
@@ -81,6 +90,8 @@ const ValueFormModal = ({ open, handleClose, value, onSave, attributeId, setAler
                         variant="outlined"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        error={!!errors.name} // Vérifiez s'il y a une erreur pour ce champ
+                        helperText={errors.name ? errors.name.join(', ') : ''} // Affichez les messages d'erreur
                         required
                     />
 
