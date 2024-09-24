@@ -7,8 +7,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import axiosInstance from '../../axiosInstance';
-import OrderFormModal from './modal';
-import PrintOrder from './print';
+import OrderFormModal from './orderModal';
 
 const OrderList = () => {
     const [orders, setOrders] = useState([]);
@@ -20,7 +19,6 @@ const OrderList = () => {
     const [alertSeverity, setAlertSeverity] = useState('success');
     const [searchTerm, setSearchTerm] = useState('');
     const [searchCriteria, setSearchCriteria] = useState('serial_number');
-    const [printModalOpen, setPrintModalOpen] = useState(false);
     const theme = useTheme();
     const user = JSON.parse(localStorage.getItem('user'));
 
@@ -69,7 +67,7 @@ const OrderList = () => {
             try {
                 await axiosInstance.delete(`/commandes/${id}`);
                 setOrders(orders.filter(order => order._id !== id));
-                showAlert('Commande supprimée avec succés.');
+                showAlert('Commande supprimée avec succès.');
             } catch (error) {
                 setError('Failed to delete order.');
                 setAlertMessage('Failed to delete order.');
@@ -80,6 +78,7 @@ const OrderList = () => {
     };
 
     const openModalForEdit = (order) => {
+        console.log(order);
         setSelectedOrder(order);
         setModalOpen(true);
     };
@@ -92,7 +91,7 @@ const OrderList = () => {
     const handleSave = async () => {
         await fetchOrders();
         setModalOpen(false);
-        showAlert(selectedOrder ? 'Commande modifiée avec succés.' : 'Commande ajoutée avec succés.', 'success');
+        showAlert(selectedOrder ? 'Commande modifiée avec succès.' : 'Commande ajoutée avec succès.', 'success');
     };
 
     const showAlert = (message, severity) => {
@@ -101,17 +100,10 @@ const OrderList = () => {
         setTimeout(() => setAlertMessage(''), 3000); // Clear alert after 3 seconds
     };
 
-    const handlePrint = async (orderId) => {
-        try {
-
-            const response = await axiosInstance.get(`/ShowCommande/${orderId}`);
-            setSelectedOrder(response.data);
-            setPrintModalOpen(true);
-        } catch (error) {
-            console.error('Error fetching order details for print:', error);
-        }
+    const handleCloseModal = () => {
+        setModalOpen(false);
+        setSelectedOrder(null); // Réinitialiser la commande sélectionnée
     };
-
 
     const columns = [
         {
@@ -127,11 +119,6 @@ const OrderList = () => {
         {
             name: 'Montant total',
             selector: row => `${row.total_amount.toFixed(2)} DT`,
-            sortable: true,
-        },
-        {
-            name: 'Status',
-            selector: row => row.status,
             sortable: true,
         },
         {
@@ -154,13 +141,6 @@ const OrderList = () => {
                         startIcon={<DeleteIcon />}
                     >
                         Supprimer
-                    </Button>
-                    <Button
-                        variant="outlined"
-                        color="info"
-                        onClick={() => handlePrint(row._id)}
-                    >
-                        Imprimer
                     </Button>
                 </div>
             ),
@@ -222,15 +202,10 @@ const OrderList = () => {
             />
             <OrderFormModal
                 open={modalOpen}
-                handleClose={() => setModalOpen(false)}
+                handleClose={handleCloseModal} // Utilisez la nouvelle fonction ici
                 order={selectedOrder}
                 onSave={handleSave}
             />
-            <PrintOrder
-        open={printModalOpen}
-        handleClose={() => setPrintModalOpen(false)}
-        order={selectedOrder}
-    />
         </Container>
     );
 };

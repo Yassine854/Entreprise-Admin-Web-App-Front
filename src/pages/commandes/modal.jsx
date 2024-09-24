@@ -345,29 +345,29 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
                                                                 <FormControl key={attrId} fullWidth sx={{ mb: 2 }}>
                                                                     <InputLabel>{productAttributes[product._id][attrId].name}</InputLabel>
                                                                     <Select
-    value={product.attributes[attrId] || ''}
-    onChange={(e) => handleAttributeChange(product._id, attrId, e.target.value)}
-    label={productAttributes[product._id][attrId].name}
-    error={!!errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.${attrId}.value_id`]}
->
-    {productAttributes[product._id][attrId].values.map(value => (
-        <MenuItem key={value._id} value={value._id}>
-            {value.name}
-        </MenuItem>
-    ))}
-</Select>
-<FormHelperText error={!!errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.0.attributes`]}>
-    {errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.0.attributes`]?.[0] || ''}
-</FormHelperText>
+                                                                        value={product.attributes[attrId] || ''}
+                                                                        onChange={(e) => handleAttributeChange(product._id, attrId, e.target.value)}
+                                                                        label={productAttributes[product._id][attrId].name}
+                                                                        error={!!errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.${attrId}.value_id`]}
+                                                                    >
+                                                                        {productAttributes[product._id][attrId].values.map(value => (
+                                                                            <MenuItem key={value._id} value={value._id}>
+                                                                                {value.name}
+                                                                            </MenuItem>
+                                                                        ))}
+                                                                    </Select>
+                                                                    <FormHelperText error={!!errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.0.attributes`]}>
+                                                                        {errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.0.attributes`]?.[0] || ''}
+                                                                    </FormHelperText>
 
 
-<FormHelperText
-    error={!!errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.${Object.keys(productAttributes[product._id]).indexOf(attrId)}.quantity`]}
->
+                                                                    <FormHelperText
+                                                                        error={!!errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.${Object.keys(productAttributes[product._id]).indexOf(attrId)}.quantity`]}
+                                                                    >
 
-    {errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.${Object.keys(productAttributes[product._id]).indexOf(attrId)}.quantity`]?.[0] || ''}
-</FormHelperText>
-                      </FormControl>
+                                                                        {errors[`products.${selectedProducts.findIndex(p => p._id === product._id)}.attributes.${Object.keys(productAttributes[product._id]).indexOf(attrId)}.quantity`]?.[0] || ''}
+                                                                    </FormHelperText>
+                                                                </FormControl>
                                                             ))}
 
                                                             <TextField
@@ -403,46 +403,46 @@ const CreateOrderFormModal = ({ open, handleClose, order, onSave }) => {
 
                         </Grid>
                         {errors && (
-    <Box sx={{ mb: 2 }}>
-        {typeof errors === 'string' ? (
-            <Typography variant="body2" color="error">
-                {errors}
-            </Typography>
-        ) : (
-            Object.values(errors).map((error, index) => (
-                <Typography key={index} variant="body2" color="error" sx={{ mb: 1 }}>
-                    {error}
-                    <br />
-                </Typography>
-            ))
-        )}
-    </Box>
-)}
+                            <Box sx={{ mb: 2 }}>
+                                {typeof errors === 'string' ? (
+                                    <Typography variant="body2" color="error">
+                                        {errors}
+                                    </Typography>
+                                ) : (
+                                    Object.values(errors).map((error, index) => (
+                                        <Typography key={index} variant="body2" color="error" sx={{ mb: 1 }}>
+                                            {error}
+                                            <br />
+                                        </Typography>
+                                    ))
+                                )}
+                            </Box>
+                        )}
 
 
 
 
                     </Box>
                     <Box sx={{ p: 2, borderTop: '1px solid #ccc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-    <Typography variant="h6">Total: {totalAmount.toFixed(2)} DT</Typography>
+                        <Typography variant="h6">Total: {totalAmount.toFixed(2)} DT</Typography>
 
-    <Box>
-        <Button
-            onClick={handleSave}
-            variant="contained"
-            color="primary"
-            sx={{ mr: 2 }}
-        >
-            {isEditing ? 'Sauvegarder' : 'Ajouter'}
-        </Button>
-        <Button
-            onClick={handleClose}
-            variant="outlined"
-        >
-            Annuler
-        </Button>
-    </Box>
-</Box>
+                        <Box>
+                            <Button
+                                onClick={handleSave}
+                                variant="contained"
+                                color="primary"
+                                sx={{ mr: 2 }}
+                            >
+                                {isEditing ? 'Sauvegarder' : 'Ajouter'}
+                            </Button>
+                            <Button
+                                onClick={handleClose}
+                                variant="outlined"
+                            >
+                                Annuler
+                            </Button>
+                        </Box>
+                    </Box>
 
                 </Box>
             </Box>

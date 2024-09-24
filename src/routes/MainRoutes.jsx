@@ -46,6 +46,9 @@ const IndexProducts = Loadable(lazy(() => import('pages/products/index')));
 //Commandes
 const Commande = Loadable(lazy(() => import('pages/commandes/index')));
 
+//Factures
+const Facture = Loadable(lazy(() => import('pages/factures/index')));
+
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -174,6 +177,10 @@ const MainRoutes = {
         element: <Commande/>
       },
 
+      {
+        path: 'factures',
+        element: <Facture/>
+      },
 
 
     {
