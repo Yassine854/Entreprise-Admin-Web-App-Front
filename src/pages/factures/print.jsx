@@ -1,31 +1,30 @@
-import React, { useRef } from 'react';
-import { Modal, Box, Typography, Button } from '@mui/material';
+import React from 'react';
+import { Modal, Box, Typography, Button, Divider } from '@mui/material';
 import PrintIcon from '@mui/icons-material/Print';
 import html2pdf from 'html2pdf.js';
 
-const PrintOrder = ({ open, handleClose, order }) => {
-    const factureRef = useRef();
-
+const PrintFactureModal = ({ open, handleClose, facture, parametre }) => {
     const downloadPdf = () => {
-        if (!factureRef.current) return;
+        const element = document.getElementById('facture-content');
+        if (!element) return;
 
         const options = {
-            margin: 1,
-            filename: `facture_${order.serial_number}.pdf`,
+            margin: [0.5, 0.5, 0.5, 0.5],
+            filename: `facture_${facture.serial_number}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2 },
-            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
         };
 
-        html2pdf().from(factureRef.current).set(options).save();
+        html2pdf().from(element).set(options).save();
     };
 
     return (
         <Modal
             open={open}
             onClose={handleClose}
-            aria-labelledby="print-order-title"
-            aria-describedby="print-order-description"
+            aria-labelledby="print-facture-title"
+            aria-describedby="print-facture-description"
         >
             <Box
                 sx={{
@@ -34,90 +33,146 @@ const PrintOrder = ({ open, handleClose, order }) => {
                     left: '50%',
                     transform: 'translate(-50%, -50%)',
                     width: '90%',
-                    maxWidth: 1200,
+                    maxWidth: 1500,
                     bgcolor: 'background.paper',
                     border: '2px solid #000',
                     boxShadow: 24,
                     p: 4,
-                    overflowY: 'auto',
+                    maxHeight: '95vh', // Set maximum height for the modal
+                    overflowY: 'auto',  // Enable vertical scrolling
                 }}
             >
-                <Typography id="print-order-title" variant="h4" component="h2" gutterBottom>
+                <Typography id="print-facture-title" variant="h4" component="h2" gutterBottom align="center">
                     Détails de la Facture
                 </Typography>
-                {order ? (
+                {facture ? (
                     <>
                         <Box
-                            ref={factureRef}
+                            id="facture-content"
                             sx={{
-                                maxWidth: 800,
-                                margin: 'auto',
-                                padding: 2,
-                                border: '1px solid #eee',
-                                boxShadow: '0 0 10px rgba(0, 0, 0, 0.15)',
+                                padding: 3,
+                                border: '1px solid #ccc',
+                                boxShadow: '0 0 15px rgba(0, 0, 0, 0.1)',
                                 fontSize: '16px',
                                 lineHeight: '24px',
                                 fontFamily: '\'Helvetica Neue\', Helvetica, Arial, sans-serif',
-                                color: '#555',
+                                color: '#333',
+                                backgroundColor: '#fff',
                             }}
                         >
-                            <h1>Facture</h1>
-                            <table style={{ width: '100%', lineHeight: 'inherit', textAlign: 'left', borderCollapse: 'collapse' }}>
-                                <tr style={{ borderBottom: '1px solid #eee' }}>
-                                    <td className="title" style={{ fontSize: '45px', lineHeight: '45px', color: '#333' }}>
-                                        {/* <img src={`https://example.shop/storage/img/profile/${product.image`} alt="Company logo" style={{ width: '100%', maxWidth: '300px' }} /> */}
-                                    </td>
+                            {/* Header */}
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                                <Box>
+                                    <Typography variant="h5" gutterBottom>
+                                        {parametre ? parametre.name : 'Nom de l’entreprise'}
+                                    </Typography>
+                                    {parametre?.email && (
+                                        <Typography>Email: {parametre.email}</Typography>
+                                    )}
+                                    {parametre?.phone && (
+                                        <Typography>Téléphone: {parametre.phone}</Typography>
+                                    )}
+                                </Box>
+                                <Box textAlign="right">
+                                    <Typography variant="h6">N°Facture : {facture.serial_number}</Typography>
+                                    <Typography><strong>Date de création:</strong> {new Date(facture.facture_date).toLocaleDateString()}</Typography>
+                                </Box>
+                            </Box>
+                            <Divider sx={{ mb: 3 }} />
 
-                                    <td style={{ textAlign: 'right' }}>
-                                        Facture #: {order.serial_number}<br />
-                                        Created: {new Date().toLocaleDateString()}<br />
-                                        Due: {new Date().toLocaleDateString()}
-                                    </td>
-                                </tr>
-                                <tr style={{ borderBottom: '1px solid #eee' }}>
-                                    <td style={{ paddingBottom: '40px' }}>
-                                        Company Name<br />
-                                        Address Line 1<br />
-                                        Address Line 2
-                                    </td>
-                                    <td style={{ paddingBottom: '40px', textAlign: 'right' }}>
-                                        {order.user.name}<br />
-                                        {order.user.email}
-                                    </td>
-                                </tr>
-                                <tr style={{ background: '#eee', borderBottom: '1px solid #ddd', fontWeight: 'bold' }}>
-                                    <td>Item</td>
-                                    <td>Price</td>
-                                </tr>
-                                {order.products.map(product => (
-                                    <tr key={product.id} style={{ borderBottom: '1px solid #eee' }}>
-                                        <td>{product.name}</td>
-                                        <td>{product.price} DT</td>
-                                    </tr>
-                                ))}
-                                <tr style={{ borderTop: '2px solid #eee', fontWeight: 'bold' }}>
-                                    <td></td>
-                                    <td>Total: {order.total_amount} DT</td>
-                                </tr>
-                            </table>
+                            {/* Client Information */}
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                                <Box>
+                                    <Typography variant="h6" gutterBottom>
+                                        Informations Client
+                                    </Typography>
+                                    {facture.command.user ? (
+                                        <>
+                                            <Typography><strong>Nom:</strong> {facture.command.user.name}</Typography>
+                                            <Typography><strong>Email:</strong> {facture.command.user.email}</Typography>
+                                            <Typography><strong>Téléphone:</strong> {facture.command.user.tel}</Typography>
+                                            <Typography><strong>Adresse:</strong> {facture.command.user.address}, {facture.command.user.city}, {facture.command.user.zip}</Typography>
+                                        </>
+                                    ) : (
+                                        <Typography>Aucune information client disponible.</Typography>
+                                    )}
+                                </Box>
+                            </Box>
+                            <Divider sx={{ mb: 3 }} />
+
+                            {/* Products Table */}
+                            <Box sx={{ mb: 3 }}>
+                                <Typography variant="h6" gutterBottom>
+                                    Produits Commandés
+                                </Typography>
+                                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: '#f5f5f5' }}>
+                                            <th style={tableHeaderStyle}>Produit</th>
+                                            <th style={tableHeaderStyle}>Attributs</th>
+                                            <th style={tableHeaderStyle}>Quantité</th>
+                                            <th style={tableHeaderStyle}>Prix (DT)</th>
+                                            <th style={tableHeaderStyle}>Total (DT)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {facture.command.products.map((product, index) => (
+                                            <tr key={index} style={{ borderBottom: '1px solid #eee' }}>
+                                                <td style={tableCellStyle}>{product.product.name}</td>
+                                                <td style={tableCellStyle}>
+                                                    {product.attributes.map((attr, idx) => (
+                                                        <div key={idx}>
+                                                            <strong>{attr.attribute.name}:</strong> {attr.value.name}
+                                                        </div>
+                                                    ))}
+                                                </td>
+                                                <td style={tableCellStyle}>{product.quantity}</td>
+                                                <td style={tableCellStyle}>{product.product.price}</td>
+                                                <td style={tableCellStyle}>{(product.product.price * product.quantity).toFixed(2)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </Box>
+
+                            {/* Financial Summary */}
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                <Typography><strong>Total Commande:</strong> {facture.command.total_amount} DT</Typography>
+                                <Typography><strong>TVA ({facture.facture_tva}%):</strong> {(facture.command.total_amount * (facture.facture_tva / 100)).toFixed(2)} DT</Typography>
+                                <Typography variant="h6"><strong>Total Facture: {facture.total_amount} DT</strong></Typography>
+                            </Box>
                         </Box>
+
                         <Button
                             variant="contained"
-                            color="primary"
-                            onClick={downloadPdf}
+                            color="secondary"
                             startIcon={<PrintIcon />}
+                            onClick={downloadPdf}
                             sx={{ mt: 3 }}
-                            disabled={!order} // Disable button if no order
                         >
                             Télécharger PDF
                         </Button>
                     </>
                 ) : (
-                    <Typography variant="body1">Aucune Facture à imprimer.</Typography>
+                    <Typography variant="h6" align="center">Aucune facture sélectionnée</Typography>
                 )}
             </Box>
         </Modal>
     );
 };
 
-export default PrintOrder;
+// Styles pour les tables
+const tableHeaderStyle = {
+    padding: '10px',
+    border: '1px solid #ddd',
+    textAlign: 'left',
+    fontWeight: 'bold',
+};
+
+const tableCellStyle = {
+    padding: '10px',
+    border: '1px solid #ddd',
+    textAlign: 'left',
+};
+
+export default PrintFactureModal;

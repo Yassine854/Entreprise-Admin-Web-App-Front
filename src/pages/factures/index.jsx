@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import DataTable from 'react-data-table-component';
-import { Button, Container, Alert, TextField, MenuItem, Select, FormControl, InputLabel, Modal, Box } from '@mui/material';
+import { Button, Container, Alert, TextField, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
@@ -22,6 +22,22 @@ const FactureList = () => {
     const [searchCriteria, setSearchCriteria] = useState('serial_number');
     const theme = useTheme();
     const user = JSON.parse(localStorage.getItem('user'));
+    const [parametre, setParametre] = useState(null);
+
+    // Fetch factures from the backend
+
+    const fetchParametres = async () => {
+        try {
+            const response = await axiosInstance.get(`/parametres/show/${user.id}`);
+            if (response.data && response.data.parametre) {
+                setParametre(response.data.parametre);
+            } else {
+                setParametre(null);
+            }
+        } catch (error) {
+            console.error('Error fetching parametres:', error);
+        }
+    };
 
     const fetchFactures = async () => {
         try {
@@ -41,8 +57,10 @@ const FactureList = () => {
 
     useEffect(() => {
         fetchFactures();
+        fetchParametres();
     }, []);
 
+    // Search logic
     const handleSearch = () => {
         const filtered = factures.filter(facture => {
             switch (searchCriteria) {
@@ -65,6 +83,7 @@ const FactureList = () => {
         handleSearch();
     }, [searchTerm, searchCriteria, factures]);
 
+    // Open modals for editing, creating, or printing factures
     const openModalForEdit = (facture) => {
         setSelectedFacture(facture);
         setModalOpen(true);
@@ -76,7 +95,6 @@ const FactureList = () => {
     };
 
     const openPrintModal = (facture) => {
-        console.log(facture);
         setSelectedFacture(facture);
         setPrintModalOpen(true);
     };
@@ -185,6 +203,7 @@ const FactureList = () => {
                 open={printModalOpen}
                 handleClose={() => setPrintModalOpen(false)}
                 facture={selectedFacture}
+                parametre={parametre}  // Pass parametre here
             />
         </Container>
     );

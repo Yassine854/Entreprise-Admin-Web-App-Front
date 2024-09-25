@@ -23,7 +23,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 
 const ParametreForm = () => {
     const [formData, setFormData] = useState({
-        title: '', description: '', key_word: '', temps_travail: '',
+        title: '', name: '', address: '', phone: '',description: '', key_word: '', temps_travail: '',
         email: '', url_fb: '', url_insta: '', url_youtube: '',
         url_tiktok: '', url_twiter: '', mode_payement: '', nature_id: ''
     });
@@ -85,6 +85,18 @@ const ParametreForm = () => {
         const validationErrors = {};
 
         // Check if nature is selected
+        if (!formData.name) {
+            validationErrors.name = "Le nom  d'entrprise est obligatoir.";
+        }
+
+        if (!formData.phone) {
+            validationErrors.phone = "Le Numéro de téléphone est obligatoir.";
+        }
+
+        if (!formData.address) {
+            validationErrors.address = "L'adresse est obligatoir.";
+        }
+
         if (!formData.nature_id) {
             validationErrors.nature = 'La nature est obligatoire.';
         }
@@ -174,158 +186,204 @@ const ParametreForm = () => {
                     </Alert>
                 )}
                 <form onSubmit={handleSubmit}>
-                    <Grid container spacing={3}>
-                        {/* Nature field with error display */}
-                        <Grid item xs={12} sm={6}>
-                            <Autocomplete
-                                options={natures}
-                                getOptionLabel={(option) => option.name}
-                                value={natures.find(nature => nature._id === formData.nature_id) || null}
-                                onChange={handleNatureChange}
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        label="Nature"
-                                        variant="outlined"
-                                        fullWidth
-                                        error={Boolean(errors.nature)}
-                                        helperText={errors.nature}
-                                    />
-                                )}
-                            />
-                            <Button onClick={handleOpenAddNature} sx={{ mt: 2 }}>Ajouter une nouvelle nature</Button>
-                        </Grid>
-
-                        {/* Other form fields */}
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Description"
-                                name="description"
-                                value={formData.description || ''}
-                                onChange={handleChange}
-                                fullWidth
-                                variant="outlined"
-                                multiline
-                                rows={4}
-                                error={Boolean(errors.description)}
-                                helperText={errors.description}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Mot Clé"
-                                name="key_word"
-                                value={formData.key_word || ''}
-                                onChange={handleChange}
-                                fullWidth
-                                variant="outlined"
-                                error={Boolean(errors.key_word)}
-                                helperText={errors.key_word}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Temps de Travail"
-                                name="temps_travail"
-                                value={formData.temps_travail || ''}
-                                onChange={handleChange}
-                                fullWidth
-                                variant="outlined"
-                                error={Boolean(errors.temps_travail)}
-                                helperText={errors.temps_travail}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="Email"
-                                name="email"
-                                type="email"
-                                value={formData.email || ''}
-                                onChange={handleChange}
-                                fullWidth
-                                variant="outlined"
-                                error={Boolean(errors.email)}
-                                helperText={errors.email}
-                            />
-                        </Grid>
-                        {/* Other URL fields */}
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="URL Facebook"
-                                name="url_fb"
-                                value={formData.url_fb || ''}
-                                onChange={handleChange}
-                                fullWidth
-                                variant="outlined"
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="URL Instagram"
-                                name="url_insta"
-                                value={formData.url_insta || ''}
-                                onChange={handleChange}
-                                fullWidth
-                                variant="outlined"
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="URL YouTube"
-                                name="url_youtube"
-                                value={formData.url_youtube || ''}
-                                onChange={handleChange}
-                                fullWidth
-                                variant="outlined"
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="URL TikTok"
-                                name="url_tiktok"
-                                value={formData.url_tiktok || ''}
-                                onChange={handleChange}
-                                fullWidth
-                                variant="outlined"
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                label="URL Twitter"
-                                name="url_twiter"
-                                value={formData.url_twiter || ''}
-                                onChange={handleChange}
-                                fullWidth
-                                variant="outlined"
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextField
-                                select
-                                label="Mode de Paiement"
-                                name="mode_payement"
-                                value={formData.mode_payement || ''}
-                                onChange={handleChange}
-                                fullWidth
-                                variant="outlined"
-                            >
-                                <MenuItem value="">Sélectionnez un mode de paiement</MenuItem>
-                                <MenuItem value="en ligne">En ligne</MenuItem>
-                                <MenuItem value="à la livraison">À la livraison</MenuItem>
-                                <MenuItem value="sans paiement">Sans paiement</MenuItem>
-                            </TextField>
-                        </Grid>
-                    </Grid>
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        color="primary"
+    <Grid container spacing={3}>
+        {/* Nature field with error display */}
+        <Grid item xs={12} sm={6}>
+            <Autocomplete
+                options={natures}
+                getOptionLabel={(option) => option.name}
+                value={natures.find(nature => nature._id === formData.nature_id) || null}
+                onChange={handleNatureChange}
+                renderInput={(params) => (
+                    <TextField
+                        {...params}
+                        label="Nature"
+                        variant="outlined"
                         fullWidth
-                        sx={{ mt: 3 }}
-                    >
-                        {parametre ? 'Modifier' : 'Créer'} Paramètres
-                    </Button>
-                </form>
+                        error={Boolean(errors.nature)}
+                        helperText={errors.nature}
+                    />
+                )}
+            />
+            <Button onClick={handleOpenAddNature} sx={{ mt: 2 }}>Ajouter une nouvelle nature</Button>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+            <TextField
+                label="Nom d'entreprise"
+                name="name"
+                value={formData.name || ''}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                error={Boolean(errors.name)}
+                helperText={errors.name}
+            />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+                                <TextField
+                                    label="Adresse"
+                                    name="address"
+                                    value={formData.address || ''}
+                                    onChange={handleChange}
+                                    fullWidth
+                                    variant="outlined"
+                                    error={Boolean(errors.address)}
+                                    helperText={errors.address}
+                                />
+                            </Grid>
+
+                            {/* Phone field */}
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    label="Téléphone"
+                                    name="phone"
+                                    value={formData.phone || ''}
+                                    onChange={handleChange}
+                                    fullWidth
+                                    variant="outlined"
+                                    error={Boolean(errors.phone)}
+                                    helperText={errors.phone}
+                                />
+                            </Grid>
+        {/* Description field */}
+        <Grid item xs={12} sm={6}>
+            <TextField
+                label="Description"
+                name="description"
+                value={formData.description || ''}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                multiline
+                rows={4}
+                error={Boolean(errors.description)}
+                helperText={errors.description}
+            />
+        </Grid>
+
+        {/* Mot Clé and Temps de Travail fields */}
+        <Grid item xs={12} sm={6}>
+            <Grid container spacing={2}>
+                <Grid item xs={12}>
+                    <TextField
+                        label="Mot Clé"
+                        name="key_word"
+                        value={formData.key_word || ''}
+                        onChange={handleChange}
+                        fullWidth
+                        variant="outlined"
+                        error={Boolean(errors.key_word)}
+                        helperText={errors.key_word}
+                    />
+                </Grid>
+                <Grid item xs={12}>
+                    <TextField
+                        label="Temps de Travail"
+                        name="temps_travail"
+                        value={formData.temps_travail || ''}
+                        onChange={handleChange}
+                        fullWidth
+                        variant="outlined"
+                        error={Boolean(errors.temps_travail)}
+                        helperText={errors.temps_travail}
+                    />
+                </Grid>
+            </Grid>
+        </Grid>
+
+        {/* Other form fields */}
+        <Grid item xs={12} sm={6}>
+            <TextField
+                label="Email"
+                name="email"
+                type="email"
+                value={formData.email || ''}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+                error={Boolean(errors.email)}
+                helperText={errors.email}
+            />
+        </Grid>
+        {/* Other URL fields */}
+        <Grid item xs={12} sm={6}>
+            <TextField
+                label="URL Facebook"
+                name="url_fb"
+                value={formData.url_fb || ''}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+            />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+            <TextField
+                label="URL Instagram"
+                name="url_insta"
+                value={formData.url_insta || ''}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+            />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+            <TextField
+                label="URL YouTube"
+                name="url_youtube"
+                value={formData.url_youtube || ''}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+            />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+            <TextField
+                label="URL TikTok"
+                name="url_tiktok"
+                value={formData.url_tiktok || ''}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+            />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+            <TextField
+                label="URL Twitter"
+                name="url_twiter"
+                value={formData.url_twiter || ''}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+            />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+            <TextField
+                select
+                label="Mode de Paiement"
+                name="mode_payement"
+                value={formData.mode_payement || ''}
+                onChange={handleChange}
+                fullWidth
+                variant="outlined"
+            >
+                <MenuItem value="">Sélectionnez un mode de paiement</MenuItem>
+                <MenuItem value="en ligne">En ligne</MenuItem>
+                <MenuItem value="à la livraison">À la livraison</MenuItem>
+                <MenuItem value="sans paiement">Sans paiement</MenuItem>
+            </TextField>
+        </Grid>
+    </Grid>
+    <Button
+        type="submit"
+        variant="contained"
+        color="primary"
+        fullWidth
+        sx={{ mt: 3 }}
+    >
+        {parametre ? 'Modifier' : 'Créer'} Paramètres
+    </Button>
+</form>
+
             </CardContent>
 
             {/* Add New Nature Dialog */}

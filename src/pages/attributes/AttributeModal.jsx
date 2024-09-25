@@ -27,6 +27,7 @@ const AttributFormModal = ({ open, handleClose, attribute, onSave }) => {
             } else {
                 // Créer un nouvel attribut
                 await axiosInstance.post(`/attributes`, payload);
+                setName('');
             }
             onSave(); // Rafraîchir la liste des attributs
             handleClose(); // Fermer le modal
