@@ -44,13 +44,16 @@ export default function AnalyticEcommerce({ color = 'primary', title, count, per
         </Grid>
       </Stack>
       <Box sx={{ pt: 2.25 }}>
-        <Typography variant="caption" color="text.secondary">
-          You made an extra{' '}
-          <Typography variant="caption" sx={{ color: `${color || 'primary'}.main` }}>
-            {extra}
-          </Typography>{' '}
-          this year
-        </Typography>
+        {/* Render this only if extra is defined */}
+        {extra && (
+          <Typography variant="caption" color="text.secondary">
+            Vous avez fait un extra{' '}
+            <Typography variant="caption" sx={{ color: `${color || 'primary'}.main` }}>
+              {extra}
+            </Typography>{' '}
+            cette année
+          </Typography>
+        )}
       </Box>
     </MainCard>
   );

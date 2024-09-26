@@ -32,18 +32,18 @@ export default function SettingTab() {
         <ListItemText primary="Paramètres Compte" />
       </ListItemButton>
 
-      <ListItemButton selected={selectedIndex === 3} onClick={(event) => handleListItemClick(event, 3, '/settings/contact')}>
+      <ListItemButton selected={selectedIndex === 3} onClick={(event) => handleListItemClick(event, 3, '/parametres')}>
+        < ListItemIcon>
+          <UnorderedListOutlined />
+        </ListItemIcon>
+        <ListItemText primary="Paramétres du site" />
+      </ListItemButton>
+
+      <ListItemButton selected={selectedIndex === 4} onClick={(event) => handleListItemClick(event, 4, '/settings/contact')}>
         <ListItemIcon>
           <CommentOutlined />
         </ListItemIcon>
         <ListItemText primary="Contact" />
-      </ListItemButton>
-
-      <ListItemButton selected={selectedIndex === 4} onClick={(event) => handleListItemClick(event, 4)}>
-        <ListItemIcon>
-          <UnorderedListOutlined />
-        </ListItemIcon>
-        <ListItemText primary="Historique" />
       </ListItemButton>
     </List>
   );

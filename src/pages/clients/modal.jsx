@@ -41,7 +41,7 @@ const ClientFormModal = ({ open, handleClose, client, onSave }) => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        const payload = { name, email, tel, city, address, zip, password, user_id: user.id };
+        const payload = { name, email, tel, city, address, zip, password, admin_id: user.id };
 
         try {
             if (client) {

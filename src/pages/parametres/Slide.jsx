@@ -4,7 +4,7 @@ import { Button, Stack, Typography, Grid, IconButton, Container, Alert } from '@
 import { useParams, useNavigate } from 'react-router-dom';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axiosInstance from '../../axiosInstance';
-import SlideFormModal from './modal'; // Ensure correct import path
+import SlideFormModal from './SlideModal'; // Ensure correct import path
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
 
@@ -14,7 +14,6 @@ const SliderAdmin = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [sliders, setSliders] = useState([]);
     const [pending, setPending] = useState(true);
-    const [editMode, setEditMode] = useState(false);
     const [selectedSlider, setSelectedSlider] = useState(null);
     const [alertMessage, setAlertMessage] = useState('');
     const [alertSeverity, setAlertSeverity] = useState('success');
@@ -36,9 +35,7 @@ const SliderAdmin = () => {
     // Handle save operation with message
     const handleSave = (message) => {
         setAlertMessage(message);
-        setAlertSeverity(message.includes('Erreur') ? 'error' : 'success');
         fetchSliders(); // Refresh sliders after saving
-        setIsModalOpen(false); // Close modal
 
         // Set a timeout to hide the alert after 3 seconds
         setTimeout(() => {
@@ -48,7 +45,6 @@ const SliderAdmin = () => {
 
     const handleEdit = (slider) => {
         setSelectedSlider(slider);
-        setEditMode(true);
         setIsModalOpen(true);
     };
 
@@ -68,8 +64,12 @@ const SliderAdmin = () => {
 
     const handleAdd = () => {
         setSelectedSlider(null);
-        setEditMode(false);
         setIsModalOpen(true);
+    };
+
+    const handleClose = () => {
+        setIsModalOpen(false);
+        setSelectedSlider(null);
     };
 
     const columns = [
@@ -123,36 +123,30 @@ const SliderAdmin = () => {
                             onClick={handleAdd}
                             startIcon={<AddIcon />}
                         >
-                            Ajouter Slide
+                            Ajouter Slider
                         </Button>
                     </Grid>
                 </Grid>
+                {alertMessage && <Alert severity={alertSeverity}>{alertMessage}</Alert>}
+                <DataTable
+                    title="Liste des Sliders"
+                    columns={columns}
+                    data={sliders}
+                    pagination
+                    progressPending={pending}
+                    noDataComponent="Aucune slide trouvée"
+                />
+                <SlideFormModal
+                    open={isModalOpen}
+                    handleClose={handleClose}
+                    slider={selectedSlider}
+                    onSave={handleSave}
+                    onAlert={(message) => {
+                        setAlertMessage(message);
+                        setAlertSeverity('success');
+                    }}
+                />
             </Stack>
-
-            {alertMessage && (
-                <Alert severity={alertSeverity} sx={{ mt: 2, mb: 1 }}>
-                    {alertMessage}
-                </Alert>
-            )}
-
-            <DataTable
-                title={<Typography variant="h5">Sliders</Typography>}
-                columns={columns}
-                data={sliders}
-                progressPending={pending}
-                pagination
-            />
-
-            <SlideFormModal
-                open={isModalOpen}
-                onClose={() => {
-                    setIsModalOpen(false);
-                    setSelectedSlider(null);
-                    setEditMode(false);
-                }}
-                slide={selectedSlider}
-                onSave={handleSave}
-            />
         </Container>
     );
 };
